@@ -95,10 +95,34 @@ export async function collect({
   const taken = listProspectSlugs()
   const results = []
 
+  onProgress({
+    message: `Checking ${operating.length} ${operating.length === 1 ? 'business' : 'businesses'}`,
+    checked: 0,
+    total: operating.length,
+    kept: 0,
+  })
+
+  let keptSoFar = 0
+
   for (const place of operating) {
     const website = check ? await classifyWebsite(place.websiteUri) : shallowClassify(place.websiteUri)
+    const keeping = keepLive || qualifies(website.status)
+    if (keeping) keptSoFar += 1
 
-    if (!(keepLive || qualifies(website.status))) {
+    // Reported per business rather than per stage. Each of these is a fetch
+    // against somebody else's server, so this is where the time actually goes,
+    // and a count that moves is the difference between waiting and wondering.
+    onProgress({
+      message: `${place.name}: ${website.reason}`,
+      checked: results.length + 1,
+      total: operating.length,
+      kept: keptSoFar,
+      keeping,
+      name: place.name,
+      reason: website.reason,
+    })
+
+    if (!keeping) {
       results.push({ kept: false, name: place.name, website, place })
       continue
     }

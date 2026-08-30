@@ -27,6 +27,17 @@ before(async () => {
       },
     },
     { method: 'GET', path: '/api/prospects/:slug', handler: async ({ params }) => params },
+    {
+      method: 'POST',
+      path: '/api/stream',
+      stream: true,
+      handler: async ({ body, send }) => {
+        send({ event: 'progress', message: 'one' })
+        send({ event: 'progress', message: 'two' })
+        if (body.fail) throw new Error('halfway through')
+        return { finished: true }
+      },
+    },
   ])
 
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
@@ -119,6 +130,59 @@ test('no CORS headers are ever sent', async () => {
   // is the second half of the protection above.
   const response = await fetch(`${base}/api/ping`)
   assert.equal(response.headers.get('access-control-allow-origin'), null)
+})
+
+test('a demo that has not been built says how to build it', async () => {
+  const response = await fetch(`${base}/demo/not-a-real-prospect/`)
+
+  assert.equal(response.status, 404)
+  assert.match(await response.text(), /htpfinder build not-a-real-prospect --run/)
+})
+
+test('a demo path cannot escape the demos directory', async () => {
+  // Encoded, because fetch normalises ../ out of a URL before sending it.
+  const response = await fetch(`${base}/demo/..%2f..%2fpackage.json`)
+  assert.ok(response.status === 403 || response.status === 404, `got ${response.status}`)
+  assert.doesNotMatch(await response.text(), /htpfinder-cli/)
+})
+
+async function ndjson(body) {
+  const response = await fetch(`${base}/api/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const text = await response.text()
+  return {
+    status: response.status,
+    lines: text.trim().split('\n').map((line) => JSON.parse(line)),
+  }
+}
+
+test('a streaming route reports as it works and ends with its result', async () => {
+  const { status, lines } = await ndjson({})
+
+  assert.equal(status, 200)
+  assert.deepEqual(lines.map((line) => line.event), ['progress', 'progress', 'done'])
+  assert.deepEqual(lines.at(-1).result, { finished: true })
+})
+
+test('a streaming route that fails halfway sends an error line', async () => {
+  // The 200 left with the first byte, so a status code cannot carry this.
+  const { status, lines } = await ndjson({ fail: true })
+
+  assert.equal(status, 200)
+  assert.equal(lines.at(-1).event, 'error')
+  assert.equal(lines.at(-1).error, 'halfway through')
+})
+
+test('a streaming route still refuses a write that is not json', async () => {
+  const response = await fetch(`${base}/api/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'text/plain' },
+    body: '{}',
+  })
+  assert.equal(response.status, 415)
 })
 
 test('an unknown route is a 404 rather than a crash', async () => {

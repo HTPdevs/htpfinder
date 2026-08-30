@@ -10,10 +10,12 @@ import fs from 'node:fs'
 
 import { buildProspect } from '../lib/builder.js'
 import { collect, listFixtures } from '../lib/collector.js'
-import { listProspectSlugs, prospectFile, readJson, writeJson } from '../lib/paths.js'
+import { enrichProspect } from '../lib/enrich.js'
+import { isDemoBuilt, listProspectSlugs, prospectFile, readJson, writeJson } from '../lib/paths.js'
 import { PALETTES } from '../lib/palettes.js'
 import { auditProfile, loadAllProfiles, loadProfile } from '../lib/profiles.js'
 import { STATUSES } from '../lib/schema.js'
+import { labelFromSlug } from '../lib/slug.js'
 import { syncPull, syncPush, syncStatus } from '../lib/sync.js'
 import { isConfigured, missingConfig } from '../lib/supabase.js'
 import { summarize, validateProspect } from '../lib/validate.js'
@@ -48,21 +50,41 @@ function allProspects() {
     .filter(Boolean)
 }
 
-/** The row the list screen needs. Deliberately not the whole document. */
-function summary(prospect) {
+/**
+ * The row the list screen needs. Deliberately not the whole document.
+ *
+ * `labels` maps an industry id to the trade name its profile carries. A
+ * prospect can outlive a profile, or sit in a trade somebody is still writing,
+ * so an id with no label falls back to a readable form of the id itself rather
+ * than showing the raw slug in a column of trade names.
+ */
+function summary(prospect, labels = new Map()) {
+  const rating = (prospect.facts?.ratings || [])[0] || null
+
   return {
     slug: prospect.slug,
     industry: prospect.industry,
+    industryLabel: labels.get(prospect.industry) || labelFromSlug(prospect.industry),
     status: prospect.status,
     provenance: prospect.provenance ?? null,
     score: prospect.score?.total ?? null,
     name: prospect.facts?.name?.value ?? null,
     hasPhone: Boolean(prospect.facts?.phone),
+    rating: rating ? Number(rating.score) : null,
+    reviewCount: rating ? rating.count ?? 0 : null,
+    ratingSource: rating?.source ?? null,
     quotes: prospect.facts?.reviewQuotes?.length ?? 0,
     services: prospect.facts?.services?.length ?? 0,
     unresolved: prospect.unresolved?.length ?? 0,
     built: Boolean(prospect.design?.paletteId),
+    demo: demoLink(prospect.slug),
   }
+}
+
+/** Where the built demo for a prospect can be opened, once one exists. */
+function demoLink(slug) {
+  const built = isDemoBuilt(slug)
+  return { built, url: built ? `/demo/${encodeURIComponent(slug)}/` : null }
 }
 
 function usedPalettes() {
@@ -79,9 +101,10 @@ export function routes() {
       handler: async () => {
         const profiles = await loadAllProfiles()
         const prospects = allProspects()
+        const labels = new Map(profiles.map((profile) => [profile.id, profile.label]))
 
         return {
-          prospects: prospects.map(summary),
+          prospects: prospects.map((prospect) => summary(prospect, labels)),
           industries: profiles.map((profile) => ({ id: profile.id, label: profile.label })),
           statuses: STATUSES,
           fixtures: listFixtures(),
@@ -107,6 +130,7 @@ export function routes() {
           prospect,
           profile: { id: profile.id, label: profile.label },
           validation: { build, collect: collectStage },
+          demo: demoLink(params.slug),
           hasRaw: fs.existsSync(prospectFile(params.slug, 'raw.json')),
         }
       },
@@ -131,6 +155,18 @@ export function routes() {
           palette: body.palette,
           force: Boolean(body.force),
           vite: Boolean(body.vite),
+        })
+        return { ...result, prospect: readProspect(params.slug), demo: demoLink(params.slug) }
+      },
+    },
+
+    {
+      method: 'POST',
+      path: '/api/prospects/:slug/enrich',
+      handler: async ({ params, body }) => {
+        const result = await enrichProspect(params.slug, {
+          force: Boolean(body.force),
+          palette: body.palette,
         })
         return { ...result, prospect: readProspect(params.slug) }
       },
@@ -180,11 +216,11 @@ export function routes() {
       path: '/api/industries/:id/brief',
       handler: async ({ params }) => {
         const shipped = await loadAllProfiles()
-        const label = params.id
-          .split('-')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-        const brief = await buildProfileBrief({ id: params.id, label, shipped })
+        const brief = await buildProfileBrief({
+          id: params.id,
+          label: labelFromSlug(params.id),
+          shipped,
+        })
         return { brief, text: renderProfileBrief(brief) }
       },
     },
@@ -206,9 +242,13 @@ export function routes() {
     {
       // Preview and commit are the same call with one flag, so what the preview
       // showed is exactly what the commit does rather than a second decision.
+      //
+      // Streamed, because a sweep fetches one website per business and the wait
+      // is long enough that silence reads as a hang.
       method: 'POST',
       path: '/api/collect',
-      handler: async ({ body }) =>
+      stream: true,
+      handler: async ({ body, send }) =>
         collect({
           industry: body.industry,
           near: body.near,
@@ -217,6 +257,7 @@ export function routes() {
           keepLive: Boolean(body.keepLive),
           check: body.check !== false,
           dryRun: body.dryRun !== false,
+          onProgress: (event) => send({ event: 'progress', ...event }),
         }),
     },
 

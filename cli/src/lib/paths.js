@@ -23,6 +23,18 @@ export function demoDataDir(slug) {
   return path.join(DEMOS_ROOT, 'src/data', slug)
 }
 
+/** Where a finished demo site lands, one directory per prospect. */
+export const DEMOS_DIST = path.join(DEMOS_ROOT, 'dist')
+
+export function demoDistDir(slug) {
+  return path.join(DEMOS_DIST, slug)
+}
+
+/** True once `htpfinder build <slug> --run` has produced a page to open. */
+export function isDemoBuilt(slug) {
+  return fs.existsSync(path.join(demoDistDir(slug), 'index.html'))
+}
+
 export function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true })
   return dir
