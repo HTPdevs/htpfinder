@@ -130,8 +130,7 @@ function NewTrade() {
         <h2 className="font-display text-lg font-bold">Add a trade</h2>
         <p className="mt-1 text-sm text-text-muted">
           Naming a trade gets you the brief for it. Three businesses need looking up before the
-          profile can be written, because the directories and the review thresholds are the parts
-          nobody can guess.
+          profile can be written.
         </p>
       </div>
 
@@ -152,7 +151,7 @@ function NewTrade() {
           </Button>
         </div>
         <p className="mt-1.5 text-xs text-text-faint">
-          Plain words, like roofing or mobile detailing.
+          Plain words, like 'roofing' or 'mobile detailing'.
         </p>
       </div>
 

@@ -99,11 +99,11 @@ export default function Collect({ state, query, go, onChange }) {
         <p className="mt-1 text-sm text-text-muted">
           Sweep{' '}
           <Hint term="a sweep">
-            One search of one trade in one place. It asks Google for businesses, then opens
+            Asks Google for businesses, then opens
             whatever website each one lists to see whether it actually works. Businesses with a
-            working site are dropped.
+            working site are optionally dropped.
           </Hint>{' '}
-          a trade in one place and keep the businesses with no working website.
+          keep the businesses with no working website.
         </p>
       </div>
 
@@ -140,8 +140,7 @@ export default function Collect({ state, query, go, onChange }) {
               <>
                 Limit
                 <Hint term="the limit">
-                  How many businesses to look at. Google charges for each one, so a first pass in
-                  a new place is cheaper at twenty than at two hundred.
+                  How many businesses to look at.
                 </Hint>
               </>
             }
@@ -161,9 +160,9 @@ export default function Collect({ state, query, go, onChange }) {
               <>
                 Recorded sweep
                 <Hint term="a recorded sweep">
-                  A search someone already ran, saved to a file. It replays instantly, costs
+                  A search already ran, saved to a file. It replays instantly, costs
                   nothing and reaches no real business, so it is the safe way to see how this
-                  works. The results are invented, and cannot be built into a page.
+                  works. The results are placeholders, not real data.
                 </Hint>
               </>
             }
@@ -209,7 +208,7 @@ export default function Collect({ state, query, go, onChange }) {
         </div>
         {!ready && (
           <p className="text-xs text-text-faint">
-            Pick a trade and either a place to search near or a recorded sweep.
+            Pick a trade and either a place to search near or a recorded demo.
           </p>
         )}
       </div>
@@ -220,7 +219,7 @@ export default function Collect({ state, query, go, onChange }) {
 
       {written && (
         <Note tone="good" title={`Wrote ${written.kept.length} prospects`}>
-          They are in your list now. Open one and use its research brief to fill in the details.
+          Open one and use its research brief to fill in the details.
         </Note>
       )}
 
@@ -291,7 +290,7 @@ function Results({ result, go, written }) {
 
       {uncertain.length > 0 && (
         <Note tone="warn" title={`${uncertain.length} site check${uncertain.length === 1 ? '' : 's'} were inconclusive`}>
-          Those businesses may still have a working site. Confirm before you reach out.
+          These businesses may still have a working site. Confirm before you reach out.
         </Note>
       )}
 

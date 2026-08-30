@@ -25,10 +25,34 @@ involved. Writing the two source files without rendering a page is the option
 rather than the default, because from the outside a button that writes files
 you cannot open looks like a button that does nothing.
 
-## Why it needs no login
+## Signing in
 
-The server binds to the loopback address and refuses anything that did not come
-from it. Three checks do the work, and `cli/test/server.test.js` pins all three:
+The panel asks who is using it before showing anything. `#/` renders
+[Login.jsx](src/screens/Login.jsx), which offers "Continue with GitHub" and
+"Continue with Google": both call `supabase.auth.signInWithOAuth` and both
+redirect back here once the provider confirms who you are.
+
+The panel builds this client itself, in the browser, from the project URL and
+publishable key `/api/state` already returns. Neither is a secret: the
+publishable key ships in client bundles by design, and it is the same one the
+CLI signs in with for `htpfinder sync`. Sign out clears that session and
+drops you back at the login screen.
+
+This needs a GitHub OAuth App and a Google OAuth client registered as
+**providers in the Supabase Dashboard** (Authentication > Providers), using
+the `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` and `OAUTH_CLIENT_ID`/
+`OAUTH_CLIENT_SECRET` pairs already in `.env`. Both OAuth apps also need this
+panel's origin (`http://localhost:4317` in production, `http://localhost:4318`
+while running `npm run dev`) listed as an authorized redirect. None of those
+four values are read by this repo's code; they only ever go into the
+Dashboard, since GoTrue is what actually talks to GitHub and Google.
+
+## Why the server itself needs no login
+
+Signing in gates what the panel shows you, but the local server behind it
+never checked a password to begin with. It binds to the loopback address and
+refuses anything that did not come from it. Three checks do the work, and
+`cli/test/server.test.js` pins all three:
 
 - **Host must be a loopback name.** A page on the internet can point a hostname
   it controls at 127.0.0.1 and have your browser send requests here. The rebound

@@ -35,7 +35,16 @@ export class NotConfiguredError extends Error {
   }
 }
 
-const REQUIRED = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_EMAIL', 'SUPABASE_PASSWORD']
+/**
+ * Two levels of configuration, because there are now two ways to be signed in.
+ *
+ * CONNECTION is which project to talk to, and it is all the UI needs: someone
+ * signing in through the panel brings their own session, so the project only
+ * has to be named. REQUIRED adds the account the CLI signs in as when nobody is
+ * sitting in front of it, which is why `htpfinder sync` still wants all four.
+ */
+const CONNECTION = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY']
+const REQUIRED = [...CONNECTION, 'SUPABASE_EMAIL', 'SUPABASE_PASSWORD']
 
 export function config() {
   loadEnv()
@@ -52,8 +61,19 @@ export function missingConfig() {
   return REQUIRED.filter((name) => !process.env[name])
 }
 
+/** What is missing before this can reach the project at all. */
+export function missingConnection() {
+  loadEnv()
+  return CONNECTION.filter((name) => !process.env[name])
+}
+
 export function isConfigured() {
   return missingConfig().length === 0
+}
+
+/** Whether a browser session can be verified, which is what gates the panel. */
+export function isConnected() {
+  return missingConnection().length === 0
 }
 
 /** Whatever the API said, said in one line. Its `message` beats our guess. */

@@ -141,8 +141,7 @@ export function Command({ children, className }) {
     <div className={clsx('command-line', className)}>
       <code className="command flex-1 break-all text-text">{children}</code>
       <Hint term="this line" align="right">
-        The command the button below runs. You never have to type it: it is here so the tool is
-        honest about what it is about to do, and so the same work can be repeated in a terminal.
+        Runs the command from the app, no terminal needed
       </Hint>
     </div>
   )

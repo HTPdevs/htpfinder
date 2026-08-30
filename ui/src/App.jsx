@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import clsx from 'clsx'
-import { Building2, Database, Radar, Users } from 'lucide-react'
+import { Building2, Database, LogOut, Radar, Users } from 'lucide-react'
 
 import { api } from './api.js'
+import { getSupabase, signInWithProvider, signOut } from './lib/auth.js'
 import { Note, Spinner } from './components/ui.jsx'
 import Home from './screens/Home.jsx'
+import Login from './screens/Login.jsx'
 import Prospects from './screens/Prospects.jsx'
 import Prospect from './screens/Prospect.jsx'
 import Collect from './screens/Collect.jsx'
@@ -73,6 +75,44 @@ export default function App() {
     refresh()
   }, [refresh])
 
+  const supabase = useMemo(
+    () => (state?.supabase?.url && state?.supabase?.key ? getSupabase(state.supabase) : null),
+    [state?.supabase?.url, state?.supabase?.key]
+  )
+
+  // undefined while the initial check is in flight, null once signed out.
+  const [session, setSession] = useState(undefined)
+  const [authPending, setAuthPending] = useState(null)
+  const [authError, setAuthError] = useState(null)
+
+  useEffect(() => {
+    if (!supabase) return undefined
+
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next)
+      setAuthPending(null)
+    })
+
+    return () => listener.subscription.unsubscribe()
+  }, [supabase])
+
+  async function handleSignIn(provider) {
+    setAuthError(null)
+    setAuthPending(provider)
+    try {
+      // Success leaves the page for the provider, so nothing after this runs.
+      const { error: signInError } = await signInWithProvider(supabase, provider)
+      if (signInError) throw signInError
+    } catch (err) {
+      setAuthError(err.message)
+      setAuthPending(null)
+    }
+  }
+
+  const signedIn = Boolean(session)
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-ink-line bg-ink/95 backdrop-blur">
@@ -82,47 +122,60 @@ export default function App() {
             <span className="font-display text-lg font-bold tracking-tight text-text">htpfinder</span>
           </a>
 
-          <nav className="order-3 -mx-1 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-0 sm:w-auto">
-            {TABS.map((item) => {
-              const Icon = item.icon
-              const active = tab === item.id
-              return (
-                <a
-                  key={item.id}
-                  href={`#/${item.id}`}
-                  className={clsx(
-                    'flex shrink-0 items-center gap-2 rounded-panel px-3 py-1.5 text-sm transition-colors',
-                    active ? 'bg-ink-panel text-text' : 'text-text-muted hover:text-text'
-                  )}
-                >
-                  <Icon size={15} />
-                  {item.label}
-                </a>
-              )
-            })}
-          </nav>
+          {signedIn && (
+            <nav className="order-3 -mx-1 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-0 sm:w-auto">
+              {TABS.map((item) => {
+                const Icon = item.icon
+                const active = tab === item.id
+                return (
+                  <a
+                    key={item.id}
+                    href={`#/${item.id}`}
+                    className={clsx(
+                      'flex shrink-0 items-center gap-2 rounded-panel px-3 py-1.5 text-sm transition-colors',
+                      active ? 'bg-ink-panel text-text' : 'text-text-muted hover:text-text'
+                    )}
+                  >
+                    <Icon size={15} />
+                    {item.label}
+                  </a>
+                )
+              })}
+            </nav>
+          )}
 
-          <div className="ml-auto flex items-center gap-3 font-mono text-micro uppercase tracking-wider">
-            <span className="text-text-faint">
-              {state ? `${state.prospects.length} prospects` : ''}
-            </span>
-            <span
-              className={clsx(
-                'flex items-center gap-1.5',
-                // A health light, not an accent. Green when the store is
-                // reachable, so it does not read as something to act on.
-                state?.supabase.configured ? 'text-ok' : 'text-text-faint'
-              )}
-              title={
-                state?.supabase.configured
-                  ? 'Supabase is configured'
-                  : `Supabase is not configured: ${state?.supabase.missing.join(', ')}`
-              }
-            >
-              <span className="size-1.5 rounded-full bg-current" />
-              store
-            </span>
-          </div>
+          {signedIn && (
+            <div className="ml-auto flex items-center gap-3 font-mono text-micro uppercase tracking-wider">
+              <span className="text-text-faint">
+                {state ? `${state.prospects.length} prospects` : ''}
+              </span>
+              <span
+                className={clsx(
+                  'flex items-center gap-1.5',
+                  // A health light, not an accent. Green when the store is
+                  // reachable, so it does not read as something to act on.
+                  state?.supabase.configured ? 'text-ok' : 'text-text-faint'
+                )}
+                title={
+                  state?.supabase.configured
+                    ? 'Supabase is configured'
+                    : `Supabase is not configured: ${state?.supabase.missing.join(', ')}`
+                }
+              >
+                <span className="size-1.5 rounded-full bg-current" />
+                store
+              </span>
+              <button
+                type="button"
+                onClick={() => signOut(supabase)}
+                title={session?.user?.email || 'Sign out'}
+                className="flex items-center gap-1.5 normal-case text-text-muted transition-colors hover:text-text"
+              >
+                <LogOut size={13} />
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -135,7 +188,22 @@ export default function App() {
 
         {!state && !error && <Spinner label="Reading prospects" />}
 
-        {state && (
+        {state && !state.supabase.connected && (
+          <Note tone="bad" title="Supabase is not configured">
+            Signing in needs a Supabase project on this server: missing {state.supabase.missing.join(', ')}
+            . Fill in <code className="command">.env</code> and restart <code className="command">htpfinder ui</code>.
+          </Note>
+        )}
+
+        {state && state.supabase.connected && session === undefined && (
+          <Spinner label="Checking your session" />
+        )}
+
+        {state && state.supabase.connected && session === null && (
+          <Login onSignIn={handleSignIn} pending={authPending} error={authError} />
+        )}
+
+        {state && signedIn && (
           <>
             {tab === '' && <Home state={state} go={go} />}
             {tab === 'prospects' && !slug && <Prospects state={state} go={go} />}

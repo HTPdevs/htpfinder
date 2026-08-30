@@ -37,8 +37,8 @@ export default function Home({ state, go }) {
           <span className="text-signal"> then show them one</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-text-muted sm:text-base">
-          Sweep a trade in one place, keep only the businesses whose listed site is missing, parked
-          or dead, and turn what is public about them into a demo page that invents nothing.
+          Keeps only the businesses whose listed site is missing from Google Maps and turn the data 
+          into a demo page instantly.
         </p>
 
         <form onSubmit={submit} className="panel mt-7 space-y-4 p-4 sm:p-5">
@@ -68,7 +68,7 @@ export default function Home({ state, go }) {
           </div>
 
           <p className="text-xs text-text-faint">
-            Nothing is searched yet. The next screen shows the sweep and what it will cost before
+            The next screen shows the process and what it will cost before
             anything runs.{' '}
             <a href="#/collect" className="text-signal hover:underline">
               Or open the full options
@@ -83,14 +83,14 @@ export default function Home({ state, go }) {
             <a href="#/collect" className="text-signal hover:underline">
               Find
             </a>{' '}
-            and pick a recorded sweep to try this out offline.
+            and pick a placeholder to try demo the app offline.
           </Note>
         )}
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Stat label="Prospects" value={state.prospects.length} href="#/prospects">
-          Businesses found so far whose listed website is missing, parked or broken.
+          Businesses found so far whose listed website is missing:
         </Stat>
         <Stat label="Waiting on copy" value={needCopy} href="#/prospects">
           Found, but with no words written for their page yet. Open one and press Write the copy.
@@ -136,7 +136,7 @@ export default function Home({ state, go }) {
           </ul>
         ) : (
           <Empty title="No prospects yet">
-            Pick a trade and a place above. The first sweep takes about a minute.
+            Pick a trade and a city above. The first scan takes a moment.
           </Empty>
         )}
       </section>

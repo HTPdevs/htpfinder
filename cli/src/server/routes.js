@@ -17,7 +17,7 @@ import { auditProfile, loadAllProfiles, loadProfile } from '../lib/profiles.js'
 import { STATUSES } from '../lib/schema.js'
 import { labelFromSlug } from '../lib/slug.js'
 import { syncPull, syncPush, syncStatus } from '../lib/sync.js'
-import { isConfigured, missingConfig } from '../lib/supabase.js'
+import { config, isConfigured, isConnected, missingConfig } from '../lib/supabase.js'
 import { summarize, validateProspect } from '../lib/validate.js'
 import { buildBrief as buildPacket, renderBrief as renderPacket } from '../commands/packet.js'
 import { buildBrief as buildProfileBrief, renderBrief as renderProfileBrief } from '../commands/profile.js'
@@ -108,7 +108,15 @@ export function routes() {
           industries: profiles.map((profile) => ({ id: profile.id, label: profile.label })),
           statuses: STATUSES,
           fixtures: listFixtures(),
-          supabase: { configured: isConfigured(), missing: missingConfig() },
+          supabase: {
+            configured: isConfigured(),
+            missing: missingConfig(),
+            // The publishable key ships in client bundles by design, so the
+            // panel can build its own signed in Auth client from these two.
+            connected: isConnected(),
+            url: config().url || null,
+            key: config().key || null,
+          },
           placesKey: Boolean(process.env.GOOGLE_PLACES_API_KEY),
         }
       },
