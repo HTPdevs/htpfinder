@@ -62,7 +62,7 @@ export default function App() {
       <header className="sticky top-0 z-10 border-b border-ink-line bg-ink/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
           <a href="#/prospects" className="flex items-baseline gap-2">
-            <span className="font-mono text-sm text-teal-bright">&gt;</span>
+            <span className="font-mono text-sm text-signal">&gt;</span>
             <span className="font-display text-lg font-bold tracking-tight text-text">htpfinder</span>
           </a>
 
@@ -93,7 +93,9 @@ export default function App() {
             <span
               className={clsx(
                 'flex items-center gap-1.5',
-                state?.supabase.configured ? 'text-teal-bright' : 'text-text-faint'
+                // A health light, not an accent. Green when the store is
+                // reachable, so it does not read as something to act on.
+                state?.supabase.configured ? 'text-ok' : 'text-text-faint'
               )}
               title={
                 state?.supabase.configured

@@ -10,8 +10,10 @@ import { Button, Command, Empty, Note, Score, Spinner, Status, Table } from '../
  */
 const STATE_COPY = {
   'in sync': { tone: 'text-text-muted' },
+  // Amber is the one that wants an action from you, green the one that is
+  // already safely stored. They sit in the same column, so they cannot share.
   'local only': { tone: 'text-signal', hint: 'On this machine, not stored yet' },
-  'remote only': { tone: 'text-teal-bright', hint: 'Stored, not on this machine' },
+  'remote only': { tone: 'text-ok', hint: 'Stored, not on this machine' },
   differs: { tone: 'text-alert', hint: 'Changed in both places' },
 }
 
@@ -160,7 +162,7 @@ export default function Sync({ state }) {
               {
                 label: 'Business',
                 get: (r) => (
-                  <a href={`#/prospects/${r.slug}`} className="font-mono text-sm text-text hover:text-teal-bright">
+                  <a href={`#/prospects/${r.slug}`} className="font-mono text-sm text-text hover:text-signal">
                     {r.slug}
                   </a>
                 ),

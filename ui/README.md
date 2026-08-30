@@ -48,10 +48,16 @@ backend rather than a mock.
 
 ## Design
 
-htpfinder is an `HTP<product>` sub brand, so the background, the teal pair and
-the type roles come from the master `> HTP_` system and are not this tool's to
-reinvent. Its own accent is `signal`, an amber used for exactly one thing: the
-prospect score, the number this tool exists to produce.
+htpfinder is an `HTP<product>` sub brand, so the background, the type roles and
+the layout language come from the master `> HTP_` system and are not this tool's
+to reinvent. What differs is the accent: `signal`, an amber dark and bright pair
+standing in for the master teal, on this tool's own surfaces only.
+
+`ok`, a green, is not a second accent. It is a functional status colour, and it
+exists because three places had teal meaning "this is fine" sitting next to
+amber meaning something else: a note that succeeded beside one that warns, a
+prospect that is stored beside one that is not, a status further along beside
+one earlier. Making both amber would have made those pairs unreadable.
 
 The signature is the command echo. Every action shows the `htpfinder` command it
 is about to run, in mono, before it runs. A UI that wraps a CLI can either hide

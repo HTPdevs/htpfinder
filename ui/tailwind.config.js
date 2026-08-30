@@ -1,11 +1,18 @@
 /**
  * The `> HTP_` brand system, as Tailwind tokens.
  *
- * Background, teal pair and type roles come from the master brand and are not
- * this tool's to reinvent. htpfinder's own accent is `signal`, an amber used
- * only for the prospect score, which is the one number this tool exists to
- * produce. It never appears on a shared surface, so it cannot compete with the
- * master teal.
+ * htpfinder is an HTP sub brand, so the background, the type roles and the
+ * layout language come from the master brand and are not this tool's to
+ * reinvent. What differs is the accent, and here that is `signal`: an amber
+ * dark and bright pair standing in for the master teal, on this tool's own
+ * surfaces only. The name is the point, since finding signal in noise is what
+ * this thing does.
+ *
+ * `ok` is not a second accent. It is a functional status colour, and it exists
+ * because three places had teal meaning "this is fine" sitting next to amber
+ * meaning something else: a note that succeeded beside one that warns, a
+ * prospect that is stored beside one that is not, a status further along beside
+ * one earlier. Making both amber would have made those pairs unreadable.
  */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
@@ -19,14 +26,18 @@ export default {
           line: '#2A2A2A',
           hover: '#222222',
         },
-        teal: {
-          deep: '#0F5C57',
-          bright: '#22D3C5',
-          wash: 'rgba(34, 211, 197, 0.10)',
-        },
+        // The accent. Dark for depth and selection, bright for primary actions
+        // and highlights, light for the lift on hover.
         signal: {
           DEFAULT: '#F0B429',
-          dim: 'rgba(240, 180, 41, 0.14)',
+          light: '#F7C948',
+          deep: '#7C4D0A',
+          wash: 'rgba(240, 180, 41, 0.10)',
+          dim: 'rgba(240, 180, 41, 0.16)',
+        },
+        ok: {
+          DEFAULT: '#49C68A',
+          wash: 'rgba(73, 198, 138, 0.10)',
         },
         alert: '#F87171',
         text: {

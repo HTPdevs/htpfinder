@@ -14,6 +14,7 @@ export default function Prospect({ slug, go, onChange }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(null)
+  const [saved, setSaved] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -35,13 +36,17 @@ export default function Prospect({ slug, go, onChange }) {
   const facts = prospect.facts || {}
   const stage = prospect.copy ? validation.build : validation.collect
 
-  async function act(name, run) {
+  async function act(name, run, confirmation) {
     setBusy(name)
     setError(null)
     try {
       await run()
       await load()
       onChange()
+      // Every write here changes a file on disk. Saying so is what makes an
+      // accidental one noticeable, instead of it sitting there until a sync
+      // reports the prospect as changed and nobody remembers changing it.
+      if (confirmation) setSaved(confirmation)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -73,7 +78,15 @@ export default function Prospect({ slug, go, onChange }) {
               value={prospect.status}
               aria-label="Status"
               className="w-auto"
-              onChange={(event) => act('status', () => api.setStatus(slug, event.target.value))}
+              onChange={(event) => {
+                const next = event.target.value
+                const previous = prospect.status
+                act(
+                  'status',
+                  () => api.setStatus(slug, next),
+                  { from: previous, to: next }
+                )
+              }}
             >
               {['collected', 'enriched', 'built', 'contacted', 'rejected'].map((value) => (
                 <option key={value} value={value}>
@@ -84,6 +97,25 @@ export default function Prospect({ slug, go, onChange }) {
           </div>
         </div>
       </div>
+
+      {saved && (
+        <Note tone="good" title={`Status changed to ${saved.to}`}>
+          <span>
+            This was {saved.from}. The change is saved on this machine, and the store will not
+            have it until you send it up.
+          </span>{' '}
+          <button
+            type="button"
+            className="text-signal underline hover:no-underline"
+            onClick={() => {
+              setSaved(null)
+              act('status', () => api.setStatus(slug, saved.from))
+            }}
+          >
+            Put it back to {saved.from}
+          </button>
+        </Note>
+      )}
 
       {prospect.provenance === 'fixture' && (
         <Note tone="warn" title="This came from a recorded sweep">
@@ -198,7 +230,7 @@ function FactRow({ label, fact }) {
           target="_blank"
           rel="noreferrer"
           title={fact.source}
-          className="shrink-0 text-text-faint hover:text-teal-bright"
+          className="shrink-0 text-text-faint hover:text-signal"
         >
           <ExternalLink size={13} />
         </a>
@@ -247,7 +279,7 @@ function linkify(text) {
         href={match[1]}
         target="_blank"
         rel="noreferrer"
-        className="text-teal-bright hover:underline"
+        className="text-signal hover:underline"
       >
         source
         <ExternalLink size={11} className="ml-0.5 inline align-baseline" />
@@ -278,7 +310,7 @@ function Ratings({ ratings }) {
                 href={rating.url}
                 target="_blank"
                 rel="noreferrer"
-                className="ml-auto text-text-faint hover:text-teal-bright"
+                className="ml-auto text-text-faint hover:text-signal"
               >
                 <ExternalLink size={13} />
               </a>
@@ -298,7 +330,7 @@ function Services({ services }) {
       <div className="panel divide-y divide-ink-line">
         {services.map((service) => (
           <div key={service.key} className="px-4 py-2.5">
-            <p className="font-mono text-xs text-teal-bright">{service.key}</p>
+            <p className="font-mono text-xs text-signal">{service.key}</p>
             <p className="mt-0.5 text-sm text-text-muted">{service.blurb}</p>
           </div>
         ))}
@@ -319,7 +351,7 @@ function Quotes({ quotes }) {
             <figcaption className="mt-1.5 flex items-center gap-2 text-xs text-text-faint">
               {[quote.author, quote.source].filter(Boolean).join(', ')}
               {quote.url && (
-                <a href={quote.url} target="_blank" rel="noreferrer" className="hover:text-teal-bright">
+                <a href={quote.url} target="_blank" rel="noreferrer" className="hover:text-signal">
                   <ExternalLink size={12} />
                 </a>
               )}
@@ -350,7 +382,7 @@ function Actions({ slug, prospect, busy, onBuild }) {
           type="checkbox"
           checked={vite}
           onChange={(event) => setVite(event.target.checked)}
-          className="size-4 rounded border-ink-line bg-ink accent-teal-bright"
+          className="size-4 rounded border-ink-line bg-ink accent-signal"
         />
         Also run the production build
       </label>

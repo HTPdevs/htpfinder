@@ -10,7 +10,7 @@ import { AlertTriangle, Check, Loader2, X } from 'lucide-react'
 
 export function Button({ variant = 'default', className, loading, children, ...props }) {
   const variants = {
-    primary: 'bg-teal-bright text-ink hover:bg-white',
+    primary: 'bg-signal text-ink hover:bg-signal-light',
     default: 'border border-ink-line bg-ink-panel text-text hover:border-text-faint',
     quiet: 'text-text-muted hover:text-text',
     danger: 'border border-alert/40 text-alert hover:bg-alert/10',
@@ -45,7 +45,7 @@ export function Field({ label, hint, children }) {
 
 const control =
   'w-full rounded-panel border border-ink-line bg-ink px-3 py-2 text-sm text-text ' +
-  'placeholder:text-text-faint focus:border-teal-bright'
+  'placeholder:text-text-faint focus:border-signal'
 
 // className is merged rather than spread over, so passing one adjusts these
 // styles instead of silently replacing them and leaving a native control.
@@ -66,7 +66,7 @@ export function Checkbox({ label, hint, ...props }) {
     <label className="flex cursor-pointer items-start gap-2.5">
       <input
         type="checkbox"
-        className="mt-0.5 size-4 rounded border-ink-line bg-ink accent-teal-bright"
+        className="mt-0.5 size-4 rounded border-ink-line bg-ink accent-signal"
         {...props}
       />
       <span>
@@ -95,8 +95,9 @@ export function Command({ children, className }) {
 /**
  * A prospect's score, as a meter.
  *
- * The one number this tool produces, so it gets the sub-brand accent and reads
- * at a glance in a dense table.
+ * The one number this tool produces. Now that the accent is used throughout,
+ * what makes this read at a glance in a dense table is the meter form rather
+ * than the colour.
  */
 export function Score({ value }) {
   if (value == null) return <span className="font-mono text-sm text-text-faint">&mdash;</span>
@@ -114,11 +115,17 @@ export function Score({ value }) {
   )
 }
 
+/**
+ * Progress reads as it goes: neutral before any research, the accent once there
+ * is something to show, then green once it has left the building. Contacted is
+ * the only one that is an outcome rather than a stage, which is why it is the
+ * only one that changes hue.
+ */
 const STATUS_TONES = {
   collected: 'text-text-muted border-ink-line',
-  enriched: 'text-teal-bright border-teal-bright/40',
-  built: 'text-teal-bright border-teal-bright/40 bg-teal-wash',
-  contacted: 'text-signal border-signal/40',
+  enriched: 'text-signal border-signal/40',
+  built: 'text-signal border-signal/40 bg-signal-wash',
+  contacted: 'text-ok border-ok/40 bg-ok-wash',
   rejected: 'text-text-faint border-ink-line line-through',
 }
 
@@ -136,9 +143,11 @@ export function Status({ value }) {
 }
 
 export function Note({ tone = 'info', title, children }) {
+  // `good` is green rather than the accent, because it sits next to `warn` and
+  // two amber notes would be one note.
   const tones = {
     info: 'border-ink-line text-text-muted',
-    good: 'border-teal-bright/30 bg-teal-wash text-text',
+    good: 'border-ok/30 bg-ok-wash text-text',
     warn: 'border-signal/30 bg-signal-dim text-text',
     bad: 'border-alert/30 bg-alert/10 text-text',
   }
