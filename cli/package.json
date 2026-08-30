@@ -1,0 +1,15 @@
+{
+  "name": "htpfinder-cli",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Local tool that finds businesses without websites, turns public data into a validated prospect file, and builds a demo site from it.",
+  "bin": {
+    "htpfinder": "./bin/htpfinder.js"
+  },
+  "scripts": {
+    "htpfinder": "node bin/htpfinder.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {}
+}

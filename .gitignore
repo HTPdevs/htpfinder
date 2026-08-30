@@ -1,0 +1,27 @@
+# Collected prospect data.
+#
+# Every fact in here is individually public. The aggregate is not: a prospect
+# file carries an owner name, a direct phone and an address, and for a sole
+# proprietor those last two are routinely a personal cell and a home address.
+# Review quotes add named third parties who have no relationship to this
+# project. That is a targeting list plus personal data about private
+# individuals, and git history makes it permanent, so it stays out.
+#
+# raw.json is out for a second reason: it is the verbatim Places API response,
+# and Google's terms restrict storing Places content. It is also the cheapest
+# thing here to lose, since `htpfinder collect` regenerates it.
+data/
+
+# Generated demo sites. Built from a prospect, so same data, one step removed.
+demos/src/data/
+demos/dist/
+
+# Secrets. GOOGLE_PLACES_API_KEY belongs in the environment, never in a file.
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+*.local
+.DS_Store

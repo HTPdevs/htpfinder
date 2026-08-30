@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Base token contract. Every demo's theme.css overrides these on :root, so
+ * nothing below hardcodes a color and a new prospect only ever edits their
+ * own theme file.
+ *
+ * Palettes draw on four seasonal families: autumn leaves, fields of flowers
+ * in spring, summer, and icy blue.
+ */
+@layer base {
+  :root {
+    color-scheme: light;
+
+    --background: 40 30% 97%;
+    --foreground: 25 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 25% 15%;
+
+    --primary: 20 55% 35%;
+    --primary-foreground: 40 40% 97%;
+
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 25 25% 20%;
+
+    --muted: 38 28% 94%;
+    --muted-foreground: 28 12% 40%;
+
+    --accent: 35 25% 90%;
+    --accent-foreground: 25 25% 20%;
+
+    --border: 35 20% 86%;
+    --input: 35 20% 84%;
+    --ring: 20 55% 42%;
+
+    /* Per demo accent pair. Accent marks answers and calls to action only. */
+    --brand: 20 55% 35%;
+    --brand-soft: 32 45% 91%;
+    --brand-ink: 20 50% 18%;
+    --highlight: 38 70% 45%;
+
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background font-body text-foreground antialiased;
+    /* Never let a long word or wide child push the page sideways. */
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-brand;
+  }
+
+}
+
+/*
+ * Hero motifs.
+ *
+ * Deliberately outside @layer components. The class name is assembled at
+ * runtime from the industry profile (`motif-${DESIGN.motif}`), which Tailwind's
+ * content scanner cannot see, so anything in a purgeable layer would be
+ * stripped from the build.
+ *
+ * Angle and width come from the generated theme, so two businesses in the same
+ * trade still get different textures.
+ */
+.motif-mow-stripes {
+  background-image: repeating-linear-gradient(
+    var(--stripe-angle, 16deg),
+    hsl(var(--brand-soft)) 0 var(--stripe-width, 26px),
+    hsl(var(--background)) var(--stripe-width, 26px) calc(var(--stripe-width, 26px) * 2)
+  );
+}
+
+.motif-diagonal-rule {
+  background-image: repeating-linear-gradient(
+    var(--stripe-angle, 16deg),
+    hsl(var(--brand-soft)) 0 2px,
+    transparent 2px var(--stripe-width, 26px)
+  );
+}
+
+.motif-grid {
+  background-image:
+    linear-gradient(hsl(var(--brand-soft)) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--brand-soft)) 1px, transparent 1px);
+  background-size: var(--stripe-width, 26px) var(--stripe-width, 26px);
+}
+
+.motif-plain {
+  background-image: none;
+}

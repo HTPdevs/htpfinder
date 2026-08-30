@@ -1,0 +1,153 @@
+{
+  "_note": "SYNTHETIC. Business names, phone numbers and street addresses are invented, and any resemblance to a real operator is coincidental. Phones use the 555-01xx range reserved for fiction. Cities and coordinates are real places at neighborhood precision, because the collector filters on locality. What is faithful is the SHAPE of a real Places response and the distribution that matters to the qualifier: three tiers of website status, businesses with and without phones, addresses, hours and ratings, and a review count spread from none to 49. Review arrays are empty because Places review text is not captured by this stage, and inventing quotes would defeat the provenance rules the tool enforces.",
+  "places": [
+    {
+      "id": "fixture-cedar-ridge-landscape",
+      "displayName": { "text": "Cedar Ridge Landscape" },
+      "formattedAddress": "Portland, OR 97229, USA",
+      "shortFormattedAddress": "Portland, OR",
+      "nationalPhoneNumber": "(503) 555-0142",
+      "rating": 4.8,
+      "userRatingCount": 12,
+      "primaryType": "landscaper",
+      "types": ["landscaper", "general_contractor", "point_of_interest"],
+      "location": { "latitude": 45.54, "longitude": -122.81 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-cedar-ridge-landscape",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-fern-hollow-gardens",
+      "displayName": { "text": "Fern Hollow Gardens" },
+      "formattedAddress": "Vancouver, WA, USA",
+      "shortFormattedAddress": "Vancouver, WA",
+      "rating": 5,
+      "userRatingCount": 3,
+      "primaryType": "landscaper",
+      "types": ["landscaper", "point_of_interest"],
+      "location": { "latitude": 45.63, "longitude": -122.66 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-fern-hollow-gardens",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-alder-street-yard-care",
+      "displayName": { "text": "Alder Street Yard Care" },
+      "formattedAddress": "1200 SE Fictional Ave, Portland, OR 97202, USA",
+      "shortFormattedAddress": "1200 SE Fictional Ave, Portland",
+      "nationalPhoneNumber": "(971) 555-0118",
+      "rating": 4.5,
+      "userRatingCount": 6,
+      "regularOpeningHours": {
+        "weekdayDescriptions": [
+          "Monday: 9:00 AM to 5:00 PM",
+          "Tuesday: 9:00 AM to 5:00 PM",
+          "Wednesday: 9:00 AM to 5:00 PM",
+          "Thursday: 9:00 AM to 5:00 PM",
+          "Friday: 9:00 AM to 5:00 PM",
+          "Saturday: 9:00 AM to 5:00 PM",
+          "Sunday: 9:00 AM to 5:00 PM"
+        ]
+      },
+      "primaryType": "lawn_care_service",
+      "types": ["lawn_care_service", "landscaper", "point_of_interest"],
+      "location": { "latitude": 45.48, "longitude": -122.62 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-alder-street-yard-care",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-verde-yardworks",
+      "displayName": { "text": "Verde Yardworks" },
+      "shortFormattedAddress": "Portland, OR",
+      "nationalPhoneNumber": "(971) 555-0173",
+      "primaryType": "lawn_care_service",
+      "types": ["lawn_care_service", "point_of_interest"],
+      "location": { "latitude": 45.51, "longitude": -122.55 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-verde-yardworks",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-stonebridge-landscaping",
+      "displayName": { "text": "Stonebridge Landscaping" },
+      "formattedAddress": "400 NE Invented Rd, Wood Village, OR 97060, USA",
+      "shortFormattedAddress": "400 NE Invented Rd, Wood Village",
+      "rating": 5,
+      "userRatingCount": 5,
+      "primaryType": "landscaper",
+      "types": ["landscaper", "point_of_interest"],
+      "location": { "latitude": 45.53, "longitude": -122.42 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-stonebridge-landscaping",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-meadowline-yard",
+      "displayName": { "text": "Meadowline Yard Inc" },
+      "formattedAddress": "88 Placeholder Dr N, Keizer, OR 97303, USA",
+      "shortFormattedAddress": "88 Placeholder Dr N, Keizer",
+      "websiteUri": "https://example.com",
+      "rating": 4.3,
+      "userRatingCount": 49,
+      "primaryType": "landscaper",
+      "types": ["landscaper", "general_contractor", "point_of_interest"],
+      "location": { "latitude": 44.99, "longitude": -123.02 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-meadowline-yard",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-northgate-yard",
+      "displayName": { "text": "Northgate Yard Maintenance" },
+      "formattedAddress": "500 SW Sample St, Beaverton, OR 97078, USA",
+      "shortFormattedAddress": "500 SW Sample St, Beaverton",
+      "rating": 4.7,
+      "userRatingCount": 7,
+      "primaryType": "lawn_care_service",
+      "types": ["lawn_care_service", "point_of_interest"],
+      "location": { "latitude": 45.47, "longitude": -122.85 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-northgate-yard",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-greenhouse-garden-shop",
+      "displayName": { "text": "Greenhouse Garden Shop" },
+      "formattedAddress": "900 SE Notional Blvd, Portland, OR 97202, USA",
+      "shortFormattedAddress": "900 SE Notional Blvd, Portland",
+      "websiteUri": "https://example.org",
+      "rating": 4.7,
+      "userRatingCount": 44,
+      "primaryType": "landscaper",
+      "types": ["landscaper", "store", "point_of_interest"],
+      "location": { "latitude": 45.49, "longitude": -122.63 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-greenhouse-garden-shop",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-jt-yard",
+      "displayName": { "text": "JT Yard Maintenance" },
+      "shortFormattedAddress": "Portland, OR",
+      "primaryType": "lawn_care_service",
+      "types": ["lawn_care_service", "point_of_interest"],
+      "location": { "latitude": 45.5, "longitude": -122.67 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-jt-yard",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    },
+    {
+      "id": "fixture-marcos-landscaping",
+      "displayName": { "text": "Marco's Landscaping" },
+      "shortFormattedAddress": "Portland, OR",
+      "websiteUri": "https://www.yelp.com/biz/marcos-landscaping-portland",
+      "primaryType": "landscaper",
+      "types": ["landscaper", "point_of_interest"],
+      "location": { "latitude": 45.52, "longitude": -122.67 },
+      "googleMapsUri": "https://maps.google.com/?cid=fixture-marcos-landscaping",
+      "businessStatus": "OPERATIONAL",
+      "reviews": []
+    }
+  ]
+}

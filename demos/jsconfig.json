@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "ignoreDeprecations": "6.0",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@demo/*": ["src/demos/key-concepts-landscape/*"]
+    }
+  },
+  "include": ["src/**/*", "vite.config.js", "tailwind.config.js"],
+  "exclude": ["node_modules", "dist", "preview"]
+}
