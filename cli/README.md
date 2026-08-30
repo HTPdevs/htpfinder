@@ -68,8 +68,10 @@ data/prospects/<slug>/
 demos/                      the renderer, reads src/data/<slug>/
 ```
 
-Prospect state is plain files on disk. No database, so a pass is inspectable
-with `cat` and a bad one is undone with `rm`.
+The CLI writes plain files on disk, so a pass is inspectable with `cat` and a
+bad one is undone with `rm`. Real research is meant to land in Supabase
+instead; the schema is live, the CLI does not write to it yet. See
+[supabase/README.md](../supabase/README.md).
 
 `data/` is gitignored. Prospect files carry owner names, direct phones and
 addresses that for a sole proprietor are often personal, plus review quotes from

@@ -172,8 +172,14 @@ apps/htpfinder/
     src/components/      the shared page sections
 ```
 
-Prospect state is plain files on disk. No database, so a pass is inspectable
-with `cat` and a bad one is undone with `rm`.
+The CLI writes plain files on disk, so a pass is inspectable with `cat` and a
+bad one is undone with `rm`.
+
+Real research is meant to land in Supabase instead. The schema is live and
+documented in [supabase/README.md](supabase/README.md), with row level security
+scoping every row to the user who collected it and a purge routine that can
+honour a removal request. The CLI does not write to it yet, so today `data/` is
+still the store and still test material.
 
 `data/` is gitignored, and that is deliberate. A prospect file carries an owner
 name, a direct phone and an address, and for a sole proprietor the last two are

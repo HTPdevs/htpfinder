@@ -174,9 +174,12 @@ CHROMIUM_PATH=/path/to/chrome node scripts/check-responsive.mjs
 
 ### Where is the state?
 
-`data/prospects/<slug>/`. Plain files on disk, no database. `raw.json` is the
-verbatim Places response and is never edited; `prospect.json` is the working
-file.
+`data/prospects/<slug>/`. Plain files on disk. `raw.json` is the verbatim
+Places response and is never edited; `prospect.json` is the working file.
+
+There is a Supabase schema for this data and it is where real research is meant
+to go, but the CLI does not read or write it yet, so nothing you run touches it.
+See [../supabase/README.md](../supabase/README.md).
 
 `data/` is gitignored, because prospect files carry owner names, direct phones
 and addresses that for a sole proprietor are often personal. So there is no
