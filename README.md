@@ -172,14 +172,14 @@ apps/htpfinder/
     src/components/      the shared page sections
 ```
 
-The CLI writes plain files on disk, so a pass is inspectable with `cat` and a
-bad one is undone with `rm`.
+Files are the working surface, so a pass is inspectable with `cat` and a bad one
+is undone with `rm`. The enrichment step is an agent filling in a file, and that
+does not want a database in the middle.
 
-Real research is meant to land in Supabase instead. The schema is live and
-documented in [supabase/README.md](supabase/README.md), with row level security
-scoping every row to the user who collected it and a purge routine that can
-honour a removal request. The CLI does not write to it yet, so today `data/` is
-still the store and still test material.
+Supabase is where the result lives afterwards, because it can scope rows to
+their owner and it can actually delete, which a git history cannot.
+`htpfinder sync push` and `htpfinder sync pull` move between the two. Schema and
+reasoning in [supabase/README.md](supabase/README.md).
 
 `data/` is gitignored, and that is deliberate. A prospect file carries an owner
 name, a direct phone and an address, and for a sole proprietor the last two are

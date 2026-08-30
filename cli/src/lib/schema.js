@@ -95,9 +95,13 @@ export function emptyProspect({ slug, industry, collectedAt }) {
     slug,
     industry,
     status: 'collected',
+    // Google's one durable identifier, and the only piece of the Places
+    // response the store keeps. Everything else about a place is refetched.
+    placeId: null,
     collectedAt,
     enrichedAt: null,
     score: null,
+    website: null,
     facts: {
       name: null,
       phone: null,

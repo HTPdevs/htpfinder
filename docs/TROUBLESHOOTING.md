@@ -170,6 +170,49 @@ CHROMIUM_PATH=/path/to/chrome node scripts/check-responsive.mjs
 
 ---
 
+## Sync
+
+### "Supabase is not configured"
+
+Copy `.env.example` to `.env` and fill in the four `SUPABASE_` values. Real
+environment variables override the file, so an exported value wins.
+
+### "Invalid login credentials"
+
+The account named in `.env` does not exist yet, or the password does not match.
+Create it once with `htpfinder sync login --signup`.
+
+If the project has email confirmation on, signup creates the user but no
+session, and every command keeps failing this way until the address is
+confirmed. `sync login --signup` says so when that happens.
+
+### Push says everything is already in sync when it is not
+
+Both sides are compared on content, not timestamps, so this means the stored row
+really does match the file. If you expected a difference, check you edited
+`prospect.json` and not a generated file under `demos/src/data/<slug>/`.
+
+### Pull refuses to overwrite
+
+The local file and the stored row both changed since they last matched. Nothing
+merges them, on purpose: picking a winner silently is how sourced research gets
+lost. Read the local copy with `htpfinder show <slug>`, then either push it or
+pass `--force` to take the stored version.
+
+### A pushed prospect never appears
+
+Its stored row is soft deleted, so the active view hides it and push skips it
+with a warning. Something removed it deliberately, sometimes for a removal
+request. `--force` puts it back.
+
+### A pulled prospect has no raw.json
+
+Working as intended. The verbatim Places response is not stored anywhere, since
+Google's terms restrict keeping Places content. Only `placeId` travels. Re
+collect if you need the raw response again.
+
+---
+
 ## General
 
 ### Where is the state?
@@ -177,9 +220,9 @@ CHROMIUM_PATH=/path/to/chrome node scripts/check-responsive.mjs
 `data/prospects/<slug>/`. Plain files on disk. `raw.json` is the verbatim
 Places response and is never edited; `prospect.json` is the working file.
 
-There is a Supabase schema for this data and it is where real research is meant
-to go, but the CLI does not read or write it yet, so nothing you run touches it.
-See [../supabase/README.md](../supabase/README.md).
+Supabase is the store of record. `htpfinder sync push` sends local prospects up,
+`htpfinder sync pull` brings stored ones down, and `htpfinder sync status` says
+what differs. See [../supabase/README.md](../supabase/README.md).
 
 `data/` is gitignored, because prospect files carry owner names, direct phones
 and addresses that for a sole proprietor are often personal. So there is no

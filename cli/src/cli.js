@@ -7,6 +7,7 @@ import * as list from './commands/list.js'
 import * as packet from './commands/packet.js'
 import * as profile from './commands/profile.js'
 import * as show from './commands/show.js'
+import * as sync from './commands/sync.js'
 import * as validate from './commands/validate.js'
 
 const COMMANDS = {
@@ -18,6 +19,7 @@ const COMMANDS = {
   packet,
   validate,
   build,
+  sync,
 }
 
 const USAGE = `
@@ -35,6 +37,7 @@ Commands
   packet <slug>           Print the enrichment brief for the research step
   validate [slug]         Check prospects against the schema and copy rules
   build <slug>            Generate the demo site files from a prospect
+  sync <push|pull>        Move prospects between files and Supabase
 
 Run a command with --help for its options.
 `

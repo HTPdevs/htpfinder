@@ -50,6 +50,7 @@ htpfinder packet key-concepts-landscape      # brief for the research step
 #   ... agent fills in data/prospects/<slug>/prospect.json ...
 htpfinder validate key-concepts-landscape
 htpfinder build key-concepts-landscape --run
+htpfinder sync push                          # store the result
 ```
 
 Run any command with `--help` for its options.
@@ -68,15 +69,39 @@ data/prospects/<slug>/
 demos/                      the renderer, reads src/data/<slug>/
 ```
 
-The CLI writes plain files on disk, so a pass is inspectable with `cat` and a
-bad one is undone with `rm`. Real research is meant to land in Supabase
-instead; the schema is live, the CLI does not write to it yet. See
-[supabase/README.md](../supabase/README.md).
+Files are the working surface, so a pass is inspectable with `cat` and a bad one
+is undone with `rm`. Supabase is the store of record, and `htpfinder sync` is
+the seam between the two. See [supabase/README.md](../supabase/README.md).
 
 `data/` is gitignored. Prospect files carry owner names, direct phones and
 addresses that for a sole proprietor are often personal, plus review quotes from
 named third parties, and git history makes that permanent. Re running `collect`
 is the intended way to get a machine back to a known state, not `git checkout`.
+
+## Sync
+
+```bash
+htpfinder sync login --signup   # once, creates the account named in .env
+htpfinder sync status           # what differs, and which way
+htpfinder sync push             # files up
+htpfinder sync pull             # store down
+```
+
+Fill in `.env` from `.env.example` first. Row level security keys off the signed
+in user, so prospects pushed under one account are invisible to any other.
+
+`status` classifies each prospect as in sync, local only, remote only or
+differs. `push` and `pull` skip anything already in sync and both take
+`--dry-run`.
+
+Neither side merges. When a prospect changed in both places, `pull` stops and
+names it rather than picking a winner, because guessing which edit to keep is
+how sourced research gets lost quietly. `--force` takes the stored copy.
+
+`raw.json` is never pushed. It is the verbatim Places response and Google's
+terms restrict storing it, so `placeId` travels and the rest does not. A pulled
+prospect therefore arrives without a local Places response, which only matters
+if you were about to re extract facts from one.
 
 ## The prospect contract
 

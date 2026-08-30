@@ -146,6 +146,7 @@ function writeProspect({ place, website, slug, score, profile, fromFixture }) {
   // Fixture runs are for offline development. Marking the prospect keeps
   // placeholder data from ever reaching a page that carries a real name.
   prospect.provenance = fromFixture ? 'fixture' : 'google-places'
+  prospect.placeId = place.placeId || null
   prospect.score = score
   prospect.website = {
     listed: place.websiteUri || null,

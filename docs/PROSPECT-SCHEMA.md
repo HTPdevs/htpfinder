@@ -23,6 +23,7 @@ something untrue.
 | `schemaVersion` | number | Currently `1`. The validator rejects anything else. |
 | `slug` | string | Directory name, and the demo's build target. |
 | `industry` | string | Must match an id in `cli/industries/`. |
+| `placeId` | string or null | Google's place id. The only piece of the Places response that is stored. |
 | `status` | string | `collected`, `enriched`, `built`, `contacted`, `rejected`. |
 | `provenance` | string | `google-places`, `fixture`, or `manual-research`. |
 | `collectedAt` | ISO date | Set by collect. |
