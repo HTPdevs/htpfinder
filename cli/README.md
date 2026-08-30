@@ -52,13 +52,22 @@ Places API   ->    agent research    ->    site.js + theme.css
 (script)           (packet + validate)     (script)
 ```
 
+`htpfinder enrich` is the floor under the middle stage. It writes every copy
+section from the facts already collected, invents nothing, and turns a whole
+sweep into buildable prospects in one pass. The agent research above is what
+makes a page good; this is what stops a page from not existing.
+
 ```bash
 htpfinder industries
 htpfinder profile "roofing"                  # brief for a trade not covered yet
 htpfinder collect lawn-care --near "Portland, OR" --limit 50
 htpfinder list --min-score 60
+
+htpfinder enrich --all                       # copy from the facts, no agent
+#   or, for the ones worth a call:
 htpfinder packet key-concepts-landscape      # brief for the research step
 #   ... agent fills in data/prospects/<slug>/prospect.json ...
+
 htpfinder validate key-concepts-landscape
 htpfinder build key-concepts-landscape --run
 htpfinder sync push                          # store the result

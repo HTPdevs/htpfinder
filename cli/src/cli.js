@@ -2,6 +2,7 @@ import * as log from './lib/log.js'
 
 import * as build from './commands/build.js'
 import * as collect from './commands/collect.js'
+import * as enrich from './commands/enrich.js'
 import * as industries from './commands/industries.js'
 import * as list from './commands/list.js'
 import * as packet from './commands/packet.js'
@@ -19,6 +20,7 @@ const COMMANDS = {
   list,
   show,
   packet,
+  enrich,
   validate,
   build,
   sync,
@@ -38,6 +40,7 @@ Commands
   list                    Show collected prospects
   show <slug>             Show one prospect and its sources
   packet <slug>           Print the enrichment brief for the research step
+  enrich <slug>           Write copy from the facts already collected
   validate [slug]         Check prospects against the schema and copy rules
   build <slug>            Generate the demo site files from a prospect
   sync <push|pull>        Move prospects between files and Supabase

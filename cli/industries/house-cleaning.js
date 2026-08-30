@@ -101,6 +101,11 @@ export default {
     { key: 'same-day', label: 'Same day and emergency cleaning', icon: 'Lightbulb' },
   ],
 
+  /** The trade in the words a sentence would use, for generated copy. */
+  copy: {
+    trade: 'house cleaning',
+  },
+
   design: {
     // Grid reads as tile and floor lines, a texture that fits a trade about
     // order and surfaces rather than the outdoor motifs the other trades use.

@@ -136,6 +136,19 @@ somebody's demo. Add new icons to both `icon-names.js` and `icons.js`.
 Aim for coverage of what the trade actually sells. Twenty entries for lawn
 care, fourteen for auto repair.
 
+### copy
+
+```js
+copy: {
+  trade: 'roof repair',
+}
+```
+
+The trade in the words a sentence would use: lowercase, two or three words.
+`htpfinder enrich` writes prose with it, and `label` cannot do that job because
+a heading dropped into the middle of a sentence reads like a directory entry.
+Left out, it falls back to the lowercased label.
+
 ### design
 
 ```js

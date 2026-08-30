@@ -7,7 +7,7 @@
  */
 export default {
   id: 'auto-repair',
-  label: 'Auto repair and service',
+  label: 'Auto Repair and Service',
 
   places: {
     includedTypes: ['car_repair', 'auto_parts_store', 'car_dealer'],
@@ -59,6 +59,11 @@ export default {
     { key: 'imports', label: 'Import specialists', icon: 'ShieldCheck' },
     { key: 'pre-purchase', label: 'Pre purchase inspection', icon: 'ShieldCheck' },
   ],
+
+  /** The trade in the words a sentence would use, for generated copy. */
+  copy: {
+    trade: 'auto repair',
+  },
 
   design: {
     motif: 'diagonal-rule',

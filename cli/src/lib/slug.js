@@ -17,6 +17,30 @@ export function slugify(name) {
     .replace(/-+$/g, '')
 }
 
+/**
+ * Words that stay lowercase inside a title, unless they open it.
+ *
+ * Kept short on purpose. A trade name is two or three words, so the usual long
+ * style guide list would only add ways to get "Lawn And Yard" wrong.
+ */
+const MINOR_WORDS = new Set(['and', 'or', 'of', 'the', 'a', 'an', 'for', 'to', 'in'])
+
+/**
+ * A readable trade name from an industry id.
+ *
+ * Only used when a profile is missing or half written. A shipped profile
+ * carries its own label, and that always wins.
+ */
+export function labelFromSlug(slug) {
+  return String(slug)
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word, index) =>
+      index > 0 && MINOR_WORDS.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ')
+}
+
 /** Adds a numeric suffix when a slug is already taken. */
 export function uniqueSlug(name, taken = []) {
   const base = slugify(name) || 'prospect'

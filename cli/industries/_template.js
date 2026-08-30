@@ -55,6 +55,16 @@ export default {
     // { key: 'example', label: 'Example service', icon: 'Wrench' },
   ],
 
+  /**
+   * The trade in the words a sentence would use, lowercase, two or three
+   * words: "lawn care", "auto repair". Automated enrichment writes prose with
+   * it. Left out, it falls back to the label, which reads like a heading in
+   * the middle of a sentence.
+   */
+  copy: {
+    trade: '',
+  },
+
   design: {
     // Hero texture and header mark, both implemented in the demos renderer.
     motif: 'plain',

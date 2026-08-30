@@ -7,7 +7,7 @@
  */
 export default {
   id: 'lawn-care',
-  label: 'Lawn and yard maintenance',
+  label: 'Lawn and Yard Maintenance',
 
   places: {
     // Category filters plus free text variants. Places categories are coarse,
@@ -75,6 +75,15 @@ export default {
     { key: 'fertilization', label: 'Fertilization and aeration', icon: 'Sprout' },
     { key: 'snow', label: 'Snow removal', icon: 'Shovel' },
   ],
+
+  /**
+   * The trade in the words a sentence would use. `label` is a heading, so
+   * "Lawn and Yard Maintenance from Foo Yard Care" reads like a directory
+   * entry. Automated enrichment writes prose, and this is what it writes with.
+   */
+  copy: {
+    trade: 'lawn care',
+  },
 
   design: {
     motif: 'mow-stripes',

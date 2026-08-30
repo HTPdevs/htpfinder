@@ -114,7 +114,10 @@ node bin/htpfinder.js list
 # Look at one in detail, with its sources
 node bin/htpfinder.js show key-concepts-landscape
 
-# Get the research brief for the enrichment step
+# Write the copy straight from the collected facts, no agent involved
+node bin/htpfinder.js enrich --all
+
+# Or get the research brief, for the prospects worth a call
 node bin/htpfinder.js packet key-concepts-landscape
 ```
 

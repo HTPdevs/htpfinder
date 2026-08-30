@@ -11,6 +11,31 @@ to do the research, point it at this file and at `htpfinder packet <slug>`.
 
 ---
 
+## The automated floor
+
+```bash
+node bin/htpfinder.js enrich <slug>
+node bin/htpfinder.js enrich --all     # every prospect with no copy yet
+```
+
+This writes all seven copy sections straight from the facts the collector
+already gathered, so a sweep of forty businesses becomes forty buildable
+prospects without an agent touching one of them. It invents nothing: every
+sentence is assembled from a fact that is present and sourced, and a fact that
+is missing means the sentence is not written at all.
+
+What it cannot do is the part below. It has no services, no years in business,
+no owner name and no directory listings to work from, so its pages say true
+things about a business rather than the specific things that get a call
+returned. Use it to get a whole sweep standing up, then do the research pass
+properly on the prospects worth a call.
+
+`enrich` refuses to overwrite copy that already exists unless you pass
+`--force`, so it can never quietly destroy a research pass. It also skips
+prospects collected from a fixture, since those can never be built.
+
+---
+
 ## Before you start
 
 ```bash

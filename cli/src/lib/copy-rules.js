@@ -17,9 +17,10 @@ const DASH_CODEPOINTS = [
   0x2212, // minus sign
 ]
 
-export const DASH_PATTERN = new RegExp(
-  `[${DASH_CODEPOINTS.map((code) => String.fromCodePoint(code)).join('')}]`
-)
+/** Every dash character, as a string. Built from the code points above. */
+export const DASH_CHARS = DASH_CODEPOINTS.map((code) => String.fromCodePoint(code)).join('')
+
+export const DASH_PATTERN = new RegExp(`[${DASH_CHARS}]`)
 
 export const BANNED_WORDS = [
   'delve',
@@ -39,7 +40,7 @@ export const BANNED_WORDS = [
  * reformatting a phone number into something unrecognisable helps nobody.
  */
 const PHONE_PATTERN = new RegExp(
-  `\\(?\\d{3}\\)?[\\s.]?\\d{3}[${DASH_CODEPOINTS.map((code) => String.fromCodePoint(code)).join('')}]\\d{4}`,
+  `\\(?\\d{3}\\)?[\\s.]?\\d{3}[${DASH_CHARS}]\\d{4}`,
   'g'
 )
 
