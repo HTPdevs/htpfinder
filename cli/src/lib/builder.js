@@ -107,10 +107,7 @@ export async function buildProspect(
   let built = false
   if (vite) {
     onProgress({ stage: 'vite', message: `building ${slug}` })
-    await run('npx', ['vite', 'build'], {
-      cwd: DEMOS_ROOT,
-      env: { ...process.env, VITE_DEMO: slug },
-    })
+    await runVite(slug)
     built = true
   }
 
@@ -128,6 +125,35 @@ export async function buildProspect(
     errors: force ? errors : [],
     viteBuilt: built,
     files: [`demos/src/data/${slug}/site.js`, `demos/src/data/${slug}/theme.css`],
+  }
+}
+
+/**
+ * The production build, which is the step that produces a page to open.
+ *
+ * Two failures are worth naming rather than passing a wall of npm output up.
+ * The renderer having no dependencies installed is the common one on a fresh
+ * clone, and it is a one line fix rather than a bug.
+ */
+async function runVite(slug) {
+  if (!fs.existsSync(path.join(DEMOS_ROOT, 'node_modules'))) {
+    throw new BuildError(
+      'The renderer has no dependencies installed, so the page cannot be built. ' +
+        'This is a one time setup step: run npm install in the demos folder.',
+      { code: 'no_deps' }
+    )
+  }
+
+  try {
+    await run('npx', ['vite', 'build'], {
+      cwd: DEMOS_ROOT,
+      env: { ...process.env, VITE_DEMO: slug },
+    })
+  } catch (err) {
+    // The useful part of a Vite failure is the last few lines, not the command
+    // line that produced it.
+    const output = `${err.stderr || ''}${err.stdout || ''}`.trim().split('\n').slice(-6).join('\n')
+    throw new BuildError(`The page build failed.\n${output || err.message}`, { code: 'vite' })
   }
 }
 
@@ -173,6 +199,7 @@ export function renderSiteModule(prospect, profile) {
     cta: copy.cta,
     about: {
       ...copy.about,
+      points: (copy.about?.points || []).map(toPoint),
       services,
       places: facts.serviceArea?.value || [],
     },
@@ -207,6 +234,19 @@ export function renderSiteModule(prospect, profile) {
  */
 export default ${js(site)}
 `
+}
+
+/**
+ * An about bullet, in the shape the renderer expects.
+ *
+ * The renderer draws a bold line and an optional second line under it, but a
+ * prospect file is easier to write with plain strings, and every hand written
+ * one uses them. Normalizing here means both work and neither has to know
+ * about the other.
+ */
+function toPoint(point) {
+  if (typeof point === 'string') return { title: point, detail: '' }
+  return { title: point?.title || '', detail: point?.detail || '' }
 }
 
 /** A rating always reads with one decimal, so "5" never looks like a typo. */

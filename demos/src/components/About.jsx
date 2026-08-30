@@ -20,9 +20,13 @@ export function About() {
               </span>
               <div className="min-w-0">
                 <p className="font-display text-[0.98rem] font-semibold">{point.title}</p>
-                <p className="mt-0.5 text-[0.95rem] leading-relaxed text-muted-foreground">
-                  {point.detail}
-                </p>
+                {/* Optional, since a bullet that says everything in its title
+                    should not carry an empty second line under it. */}
+                {point.detail && (
+                  <p className="mt-0.5 text-[0.95rem] leading-relaxed text-muted-foreground">
+                    {point.detail}
+                  </p>
+                )}
               </div>
             </li>
           ))}
@@ -44,7 +48,10 @@ export function About() {
         </div>
       </div>
 
-      <div className="mt-14">
+      {/* A prospect with no researched services would otherwise show a heading
+          with nothing under it, which reads as a page that failed to load
+          rather than one that is honest about what is not known. */}
+      <div className={ABOUT.services.length ? 'mt-14' : 'hidden'}>
         <h3 className="text-[1.2rem] font-semibold tracking-tight">{ABOUT.servicesHeadline}</h3>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ABOUT.services.map((service) => {
