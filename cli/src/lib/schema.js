@@ -88,6 +88,118 @@ export const COPY_SECTIONS = ['seo', 'hero', 'cta', 'about', 'reviews', 'contact
  * }
  */
 
+/**
+ * The order fields are written in.
+ *
+ * jsonb stores a parsed document rather than its text, so anything read back
+ * from the database arrives with object keys sorted by length. That loses
+ * nothing, but `prospect.json` is a file people and agents read and edit, and
+ * a file where `name` sits between `hours` and `address` is materially harder
+ * to work with. Restoring the documented order on the way out keeps a pulled
+ * prospect looking like a written one, and keeps diffs meaningful.
+ */
+const ORDER = {
+  prospect: [
+    'schemaVersion',
+    'slug',
+    'industry',
+    'status',
+    'provenance',
+    'placeId',
+    'collectedAt',
+    'enrichedAt',
+    'score',
+    'website',
+    'facts',
+    'unresolved',
+    'copy',
+    'design',
+  ],
+  score: ['total', 'reasons'],
+  website: ['listed', 'status', 'reason', 'uncertain', 'checkedAt'],
+  fact: ['value', 'approx', 'source', 'confirmed'],
+  location: ['latitude', 'longitude'],
+  rating: ['source', 'url', 'score', 'count'],
+  quote: ['text', 'author', 'source', 'url', 'rating', 'publishedAt'],
+  service: ['key', 'blurb', 'source'],
+  design: ['paletteId', 'motif', 'mark'],
+  // Not COPY_SECTIONS: that lists the sections a build requires, and `nav` is
+  // written during enrichment without being one of them.
+  copy: ['seo', 'nav', ...COPY_SECTIONS.filter((section) => section !== 'seo')],
+  seo: ['title', 'description', 'themeColor'],
+  hero: ['eyebrow', 'headline', 'subhead', 'footnote', 'chips'],
+  cta: ['primary', 'secondary', 'eyebrow', 'headline', 'body', 'points'],
+  about: [
+    'eyebrow',
+    'headline',
+    'body',
+    'points',
+    'stats',
+    'servicesHeadline',
+    'areaHeadline',
+    'areaBody',
+  ],
+  reviews: ['eyebrow', 'headline', 'body', 'placeholder'],
+  contact: ['eyebrow', 'headline', 'body', 'noPhoneNote', 'formPlaceholder', 'formButton'],
+  footer: ['shortName', 'tagline', 'legalNote', 'sourceNote'],
+}
+
+/** Known keys first in the given order, then anything unrecognised, unchanged. */
+function order(value, keys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value
+  const known = keys.filter((key) => key in value)
+  const rest = Object.keys(value).filter((key) => !keys.includes(key))
+  return Object.fromEntries([...known, ...rest].map((key) => [key, value[key]]))
+}
+
+const FACT_SHAPES = {
+  location: ORDER.location,
+  ratings: ORDER.rating,
+  reviewQuotes: ORDER.quote,
+  services: ORDER.service,
+}
+
+/** Rewrites a prospect with its fields in the documented order. */
+export function orderProspect(prospect) {
+  const facts = prospect.facts ?? {}
+  const factKeys = Object.keys(emptyProspect({}).facts)
+
+  const orderedFacts = order(
+    Object.fromEntries(
+      Object.entries(facts).map(([key, value]) => {
+        const shape = FACT_SHAPES[key] || ORDER.fact
+        return [key, Array.isArray(value) ? value.map((item) => order(item, shape)) : order(value, shape)]
+      })
+    ),
+    factKeys
+  )
+
+  const copy =
+    prospect.copy == null
+      ? prospect.copy
+      : order(
+          Object.fromEntries(
+            Object.entries(prospect.copy).map(([section, value]) => [
+              section,
+              ORDER[section] ? order(value, ORDER[section]) : value,
+            ])
+          ),
+          ORDER.copy
+        )
+
+  return order(
+    {
+      ...prospect,
+      score: order(prospect.score, ORDER.score),
+      website: order(prospect.website, ORDER.website),
+      facts: orderedFacts,
+      copy,
+      design: order(prospect.design, ORDER.design),
+    },
+    ORDER.prospect
+  )
+}
+
 /** A blank prospect, used by the collector. */
 export function emptyProspect({ slug, industry, collectedAt }) {
   return {

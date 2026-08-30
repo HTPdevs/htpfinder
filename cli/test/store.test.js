@@ -59,8 +59,22 @@ function enriched() {
  */
 const asPostgresTimestamp = (iso) => (iso ? iso.replace(/\.\d+Z$/, '+00:00') : null)
 
+/**
+ * jsonb stores a parsed document, not its text, and hands object keys back
+ * ordered by length then bytewise. Reproducing that here is what makes these
+ * tests answer the question a real push asks, rather than an easier one.
+ */
+function asJsonb(value) {
+  if (Array.isArray(value)) return value.map(asJsonb)
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort((a, b) => a.length - b.length || (a < b ? -1 : 1))
+    return Object.fromEntries(keys.map((key) => [key, asJsonb(value[key])]))
+  }
+  return value
+}
+
 function asStoredRow(prospect, overrides = {}) {
-  const row = toRow(prospect)
+  const row = asJsonb(toRow(prospect))
   return {
     ...row,
     id: '00000000-0000-0000-0000-000000000001',
@@ -144,6 +158,17 @@ test('sameContent ignores the bookkeeping the database keeps for itself', () => 
   const prospect = enriched()
   const row = asStoredRow(prospect, { updated_at: '2027-01-01T00:00:00+00:00' })
 
+  assert.equal(sameContent(prospect, row), true)
+})
+
+test('sameContent survives jsonb reordering the keys', () => {
+  // Without this, a push reports success and the very next status calls every
+  // prospect changed, so push is never idempotent and re pushes everything.
+  const prospect = enriched()
+  const row = asStoredRow(prospect)
+
+  const order = Object.keys(row.website)
+  assert.notDeepEqual(order, Object.keys(prospect.website), 'the fixture should reorder keys')
   assert.equal(sameContent(prospect, row), true)
 })
 

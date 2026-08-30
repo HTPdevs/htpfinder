@@ -7,7 +7,7 @@
  * round trip here would quietly corrupt research on the next pull.
  */
 
-import { SCHEMA_VERSION } from './schema.js'
+import { orderProspect, SCHEMA_VERSION } from './schema.js'
 
 export const TABLE = 'prospects'
 export const ACTIVE_VIEW = 'prospects_active'
@@ -60,7 +60,9 @@ export function toRow(prospect, { ownerId } = {}) {
 }
 
 export function fromRow(row) {
-  return {
+  // Ordered on the way out, because jsonb hands keys back sorted by length and
+  // `prospect.json` is a file people read.
+  return orderProspect({
     schemaVersion: row.schema_version ?? SCHEMA_VERSION,
     slug: row.slug,
     industry: row.industry,
@@ -79,7 +81,28 @@ export function fromRow(row) {
     unresolved: copyOf(row.unresolved) ?? [],
     copy: copyOf(row.copy) ?? null,
     design: copyOf(row.design) ?? null,
+  })
+}
+
+/**
+ * JSON with object keys in a fixed order.
+ *
+ * jsonb does not store a document, it stores its parsed form, and it orders
+ * object keys by length and then bytewise on the way back out. So a row read
+ * straight after being written comes back with the same content in a different
+ * key order, and a plain `JSON.stringify` comparison calls every prospect
+ * changed. Arrays are left alone, since jsonb does preserve their order.
+ */
+function canonical(value) {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`
+  if (value && typeof value === 'object') {
+    const body = Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+      .join(',')
+    return `{${body}}`
   }
+  return JSON.stringify(value) ?? 'null'
 }
 
 /**
@@ -90,7 +113,5 @@ export function fromRow(row) {
  * does not read as a difference on the next status.
  */
 export function sameContent(prospect, row) {
-  const a = toRow(prospect)
-  const b = toRow(fromRow(row))
-  return JSON.stringify(a) === JSON.stringify(b)
+  return canonical(toRow(prospect)) === canonical(toRow(fromRow(row)))
 }

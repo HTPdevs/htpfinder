@@ -68,15 +68,22 @@ export async function run(args) {
   }
 }
 
-/** Local prospects, by slug. A directory with no prospect.json is not one yet. */
-function readLocal(only) {
+/**
+ * Local prospects, by slug. A directory with no prospect.json is not one yet.
+ *
+ * `mustExist` is what separates the two callers. Naming a slug that has no file
+ * is a mistake when pushing and the whole point when pulling.
+ */
+function readLocal(only, { mustExist = false } = {}) {
   const slugs = only ? [only] : listProspectSlugs()
   const found = new Map()
 
   for (const slug of slugs) {
     const file = prospectFile(slug, 'prospect.json')
     if (!fs.existsSync(file)) {
-      if (only) throw new Error(`No prospect file for "${slug}". Run htpfinder collect first.`)
+      if (only && mustExist) {
+        throw new Error(`No prospect file for "${slug}". Run htpfinder collect first.`)
+      }
       continue
     }
     found.set(slug, readJson(file))
@@ -169,7 +176,7 @@ async function deletedSlugs(client, slugs) {
 
 async function push({ args, slug }) {
   const client = createClient()
-  const local = readLocal(slug)
+  const local = readLocal(slug, { mustExist: true })
 
   if (!local.size) {
     log.warn('No local prospects to push.')
