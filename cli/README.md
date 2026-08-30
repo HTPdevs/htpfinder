@@ -28,6 +28,17 @@ Zero runtime dependencies. Node 20 or newer.
 Without an API key everything except live collection still works, using the
 recorded fixtures in `fixtures/`.
 
+## Not a terminal person
+
+```bash
+cd ui && npm install && npm run build   # once
+htpfinder ui
+```
+
+Opens a local control panel with everything below in it, running the same code
+underneath. It shows the command behind every action, so it doubles as a way to
+learn this CLI. See [ui/README.md](../ui/README.md).
+
 ## The pipeline
 
 Three stages. The middle one is an agent, and that is deliberate: deciding that
@@ -61,8 +72,12 @@ Run any command with `--help` for its options.
 cli/
   industries/<id>.js        everything vertical specific
   fixtures/                 recorded Places responses for offline work
-  src/lib/                  places, qualify, palettes, schema, validate
-  src/commands/             one file per command
+  src/lib/                  the pipeline: places, qualify, collector, builder,
+                            validate, store, sync. Commands and the UI both
+                            call these, so there is one implementation
+  src/commands/             one file per command, presentation only
+  src/server/              the API behind `htpfinder ui`
+ui/                         the control panel, built to ui/dist
 data/prospects/<slug>/
   raw.json                  verbatim Places response
   prospect.json             the contract, facts plus copy

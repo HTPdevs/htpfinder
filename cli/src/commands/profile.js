@@ -93,7 +93,7 @@ export async function buildBrief({ id, label, shipped = [] }) {
   }
 }
 
-function renderBrief(brief) {
+export function renderBrief(brief) {
   const lines = []
 
   lines.push(`INDUSTRY BRIEF: ${brief.industryLabel} (${brief.industry})`)

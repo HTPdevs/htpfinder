@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink text-text font-body antialiased;
+  }
+
+  /* Keyboard focus stays visible everywhere. It is the only outline in the
+     design, so it reads as intent rather than as a browser default. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-teal-bright ring-offset-2 ring-offset-ink;
+  }
+
+  ::selection {
+    @apply bg-teal-deep text-text;
+  }
+}
+
+@layer components {
+  /*
+   * The signature: a command echo.
+   *
+   * This UI runs the CLI underneath, and says so. Every action that writes
+   * something shows the command it is about to run, which makes the tool
+   * honest about what it does and teaches the CLI to someone who does not use
+   * one yet.
+   */
+  .command {
+    @apply font-mono text-[0.8125rem] leading-relaxed text-text-muted;
+  }
+
+  .command-line {
+    @apply flex items-start gap-2 rounded-panel border border-ink-line bg-ink px-3 py-2;
+  }
+
+  .command-line::before {
+    content: '$';
+    @apply font-mono text-teal-bright;
+  }
+
+  .eyebrow {
+    @apply font-mono text-micro uppercase tracking-[0.14em] text-text-faint;
+  }
+
+  .panel {
+    @apply rounded-panel border border-ink-line bg-ink-raised;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

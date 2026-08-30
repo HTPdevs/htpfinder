@@ -15,6 +15,7 @@ five minutes and needs no API key.
 | I want to | Go to |
 | --- | --- |
 | Understand what this is and run it once | This page |
+| Use this without a terminal | [ui/README.md](ui/README.md) |
 | Research a prospect and write their page | [docs/ENRICHMENT.md](docs/ENRICHMENT.md) |
 | Know what every field in a prospect file means | [docs/PROSPECT-SCHEMA.md](docs/PROSPECT-SCHEMA.md) |
 | Add a new trade, for example roofing or dental | [docs/ADDING-AN-INDUSTRY.md](docs/ADDING-AN-INDUSTRY.md) |
@@ -99,7 +100,7 @@ against recorded results.
 
 ```bash
 cd apps/htpfinder/cli
-npm test                    # 26 tests, no dependencies to install
+npm test                    # no dependencies to install
 
 # What trades does this install know about?
 node bin/htpfinder.js industries
@@ -120,6 +121,16 @@ node bin/htpfinder.js packet key-concepts-landscape
 The `collect` output ranks prospects by score and explains, per business, why
 it thinks there is no website. Businesses that turn out to have a working site
 are skipped and counted.
+
+Or do all of that in a browser instead:
+
+```bash
+cd ../ui && npm install && npm run build   # once
+cd ../cli && node bin/htpfinder.js ui
+```
+
+The control panel runs the same code underneath and shows the command behind
+every action, so it is also a way to learn the CLI.
 
 To run against live data instead, set a key and drop the fixture flag:
 

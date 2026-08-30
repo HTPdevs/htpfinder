@@ -8,9 +8,11 @@ import * as packet from './commands/packet.js'
 import * as profile from './commands/profile.js'
 import * as show from './commands/show.js'
 import * as sync from './commands/sync.js'
+import * as ui from './commands/ui.js'
 import * as validate from './commands/validate.js'
 
 const COMMANDS = {
+  ui,
   industries,
   profile,
   collect,
@@ -29,6 +31,7 @@ htpfinder
   prospect file, and builds a demo site from it.
 
 Commands
+  ui                      Open the local control panel in a browser
   industries              List the industry profiles available
   profile <industry>      Print the research brief for a trade we do not cover
   collect <industry>      Sweep Places for prospects without a website

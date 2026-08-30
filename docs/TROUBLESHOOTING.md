@@ -170,6 +170,35 @@ CHROMIUM_PATH=/path/to/chrome node scripts/check-responsive.mjs
 
 ---
 
+## Control panel
+
+### "The UI has not been built yet"
+
+```bash
+cd ui && npm install && npm run build
+```
+
+The server serves `ui/dist`, which is gitignored because it is generated.
+
+### Port 4317 is already in use
+
+Another copy is running, or something else took the port. `htpfinder ui --port
+4318` moves it.
+
+### "Refusing a request for host" or "Refusing a cross origin request"
+
+Working as intended. The server only answers requests that came from the
+loopback address, which is what lets it run without a login. Reach it at
+`http://localhost:<port>`, not through any other hostname or tunnel.
+
+### My changes to the UI are not showing
+
+The browser is holding the old bundle, or you did not rebuild. Run `npm run
+build` in `ui/`, then hard reload. While actually working on it, run `htpfinder
+ui --no-open` and `npm run dev` together instead and use port 4318.
+
+---
+
 ## Sync
 
 ### "Supabase is not configured"

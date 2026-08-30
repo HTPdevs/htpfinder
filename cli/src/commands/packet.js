@@ -130,7 +130,7 @@ export function buildBrief(prospect, profile, takenPalettes = []) {
   }
 }
 
-function renderBrief(brief) {
+export function renderBrief(brief) {
   const lines = []
   const rule = '-'.repeat(0) // no dashes in output text
 
