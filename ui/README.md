@@ -18,6 +18,13 @@ libs the commands call, so the validator, the scorer, the qualifier and the
 store are shared. The UI and the CLI cannot disagree about whether a prospect is
 ready, because there is only one implementation of the question.
 
+The same server also serves finished demo sites at `/demo/<slug>/`, straight out
+of `demos/dist/`. Build the demo site renders the page and then offers to open
+it, so what a prospect would get is one click away with no second dev server
+involved. Writing the two source files without rendering a page is the option
+rather than the default, because from the outside a button that writes files
+you cannot open looks like a button that does nothing.
+
 ## Why it needs no login
 
 The server binds to the loopback address and refuses anything that did not come
@@ -35,6 +42,27 @@ from it. Three checks do the work, and `cli/test/server.test.js` pins all three:
 
 This matters more than it looks: the server writes files, spends Google Places
 quota and holds a signed in Supabase session.
+
+## Screens
+
+`#/` is a hero and a two field form: trade and place. Submitting it hands those
+to `#/collect` through the hash query rather than starting a sweep, so a live
+search still takes a deliberate click on a screen that shows the whole command
+first. The other tabs are the prospect list, the full Find options, the trade
+profiles and the Supabase status.
+
+A sweep reports as it runs. `/api/collect` streams one JSON object per line and
+the Find screen shows each business as its site is checked, because sixty
+website fetches behind a spinner is indistinguishable from a hang.
+
+## Words this tool uses
+
+Prospect, sweep, provenance, palette, copy. The vocabulary stays, because it is
+what the CLI, the docs and the schema call these things, and a UI that renames
+everything teaches names that then match nothing. The explanation comes to you
+instead: the `Hint` primitive puts a question mark beside a term and a plain
+sentence behind it, on hover or on focus, so it reaches a keyboard and a phone
+as well as a mouse.
 
 ## Working on it
 

@@ -4,6 +4,7 @@ import { Building2, Database, Radar, Users } from 'lucide-react'
 
 import { api } from './api.js'
 import { Note, Spinner } from './components/ui.jsx'
+import Home from './screens/Home.jsx'
 import Prospects from './screens/Prospects.jsx'
 import Prospect from './screens/Prospect.jsx'
 import Collect from './screens/Collect.jsx'
@@ -19,14 +20,19 @@ const TABS = [
 
 /**
  * Hash routing, so a reload keeps you where you were and the server needs no
- * rewrite rules. Two shapes only: `#/prospects` and `#/prospects/<slug>`.
+ * rewrite rules. Three shapes: `#/`, `#/prospects/<slug>`, and a tab with a
+ * query, as in `#/collect?industry=lawn-care&near=Portland`.
+ *
+ * The query matters: it is how the homepage hands a sweep to the Find screen
+ * without a shared store, and it means a half filled form survives a reload
+ * and can be sent to somebody else as a link.
  */
 function useRoute() {
-  const [hash, setHash] = useState(() => window.location.hash.slice(1) || '/prospects')
+  const [hash, setHash] = useState(() => window.location.hash.slice(1) || '/')
 
   useEffect(() => {
     const onChange = () => {
-      setHash(window.location.hash.slice(1) || '/prospects')
+      setHash(window.location.hash.slice(1) || '/')
       // Opening a prospect from halfway down the list should start at the top
       // of the prospect, not halfway down it.
       window.scrollTo(0, 0)
@@ -35,12 +41,22 @@ function useRoute() {
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
 
-  const [, tab = 'prospects', slug] = hash.split('/')
-  return { tab, slug, go: (path) => { window.location.hash = path } }
+  const [path, search = ''] = hash.split('?')
+  const [, tab = '', slug] = path.split('/')
+
+  return {
+    tab,
+    slug,
+    query: new URLSearchParams(search),
+    search,
+    go: (target) => {
+      window.location.hash = target
+    },
+  }
 }
 
 export default function App() {
-  const { tab, slug, go } = useRoute()
+  const { tab, slug, query, search, go } = useRoute()
   const [state, setState] = useState(null)
   const [error, setError] = useState(null)
 
@@ -61,7 +77,7 @@ export default function App() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-ink-line bg-ink/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
-          <a href="#/prospects" className="flex items-baseline gap-2">
+          <a href="#/" className="flex items-baseline gap-2">
             <span className="font-mono text-sm text-signal">&gt;</span>
             <span className="font-display text-lg font-bold tracking-tight text-text">htpfinder</span>
           </a>
@@ -121,9 +137,14 @@ export default function App() {
 
         {state && (
           <>
+            {tab === '' && <Home state={state} go={go} />}
             {tab === 'prospects' && !slug && <Prospects state={state} go={go} />}
             {tab === 'prospects' && slug && <Prospect slug={slug} go={go} onChange={refresh} />}
-            {tab === 'collect' && <Collect state={state} go={go} onChange={refresh} />}
+            {tab === 'collect' && (
+              // Keyed on the query, so arriving from the homepage with a
+              // different trade refills the form rather than keeping the old one.
+              <Collect key={search} state={state} query={query} go={go} onChange={refresh} />
+            )}
             {tab === 'industries' && <Industries />}
             {tab === 'sync' && <Sync state={state} />}
           </>

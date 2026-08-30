@@ -1,7 +1,19 @@
 import { useState } from 'react'
+import clsx from 'clsx'
 
 import { api } from '../api.js'
-import { Button, Checkbox, Command, Field, Input, Note, Score, Select, Table } from '../components/ui.jsx'
+import {
+  Button,
+  Checkbox,
+  Command,
+  Field,
+  Hint,
+  Input,
+  Note,
+  Score,
+  Select,
+  Table,
+} from '../components/ui.jsx'
 
 /**
  * Preview, then commit.
@@ -11,19 +23,22 @@ import { Button, Checkbox, Command, Field, Input, Note, Score, Select, Table } f
  * Google Places quota and reaches out to real businesses' websites, and neither
  * should ever happen because a button was ambiguous.
  */
-export default function Collect({ state, go, onChange }) {
-  const [form, setForm] = useState({
-    industry: state.industries[0]?.id || '',
-    near: '',
-    limit: 60,
-    fixture: '',
+export default function Collect({ state, query, go, onChange }) {
+  // Prefilled from the hash, which is how the homepage form arrives here. The
+  // sweep is still one deliberate click away, because a live one spends quota.
+  const [form, setForm] = useState(() => ({
+    industry: query?.get('industry') || state.industries[0]?.id || '',
+    near: query?.get('near') || '',
+    limit: Number(query?.get('limit')) || 60,
+    fixture: query?.get('fixture') || '',
     keepLive: false,
     check: true,
-  })
+  }))
   const [preview, setPreview] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [written, setWritten] = useState(null)
+  const [progress, setProgress] = useState(null)
 
   const set = (patch) => {
     setForm((current) => ({ ...current, ...patch }))
@@ -48,8 +63,20 @@ export default function Collect({ state, go, onChange }) {
   async function run(dryRun) {
     setBusy(true)
     setError(null)
+    setProgress({ lines: [], checked: 0, total: 0, kept: 0 })
+
     try {
-      const result = await api.collect({ ...form, limit: Number(form.limit), dryRun })
+      const result = await api.collect({ ...form, limit: Number(form.limit), dryRun }, (event) =>
+        setProgress((current) => ({
+          // Capped, because a sweep of two hundred would otherwise grow the
+          // page as it ran and push the buttons off the screen.
+          lines: [...(current?.lines || []), event].slice(-8),
+          checked: event.checked ?? current?.checked ?? 0,
+          total: event.total ?? current?.total ?? 0,
+          kept: event.kept ?? current?.kept ?? 0,
+        }))
+      )
+
       if (dryRun) {
         setPreview(result)
       } else {
@@ -61,6 +88,7 @@ export default function Collect({ state, go, onChange }) {
       setError(err.message)
     } finally {
       setBusy(false)
+      setProgress(null)
     }
   }
 
@@ -69,7 +97,13 @@ export default function Collect({ state, go, onChange }) {
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">Find prospects</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Sweep a trade in one place and keep the businesses with no working website.
+          Sweep{' '}
+          <Hint term="a sweep">
+            One search of one trade in one place. It asks Google for businesses, then opens
+            whatever website each one lists to see whether it actually works. Businesses with a
+            working site are dropped.
+          </Hint>{' '}
+          a trade in one place and keep the businesses with no working website.
         </p>
       </div>
 
@@ -101,7 +135,18 @@ export default function Collect({ state, go, onChange }) {
             />
           </Field>
 
-          <Field label="Limit" hint="How many places to consider">
+          <Field
+            label={
+              <>
+                Limit
+                <Hint term="the limit">
+                  How many businesses to look at. Google charges for each one, so a first pass in
+                  a new place is cheaper at twenty than at two hundred.
+                </Hint>
+              </>
+            }
+            hint="How many places to consider"
+          >
             <Input
               type="number"
               min="1"
@@ -111,7 +156,19 @@ export default function Collect({ state, go, onChange }) {
             />
           </Field>
 
-          <Field label="Recorded sweep" hint="Runs offline and spends no quota">
+          <Field
+            label={
+              <>
+                Recorded sweep
+                <Hint term="a recorded sweep">
+                  A search someone already ran, saved to a file. It replays instantly, costs
+                  nothing and reaches no real business, so it is the safe way to see how this
+                  works. The results are invented, and cannot be built into a page.
+                </Hint>
+              </>
+            }
+            hint="Runs offline and spends no quota"
+          >
             <Select value={form.fixture} onChange={(event) => set({ fixture: event.target.value })}>
               <option value="">Search live</option>
               {state.fixtures.map((name) => (
@@ -157,6 +214,8 @@ export default function Collect({ state, go, onChange }) {
         )}
       </div>
 
+      {progress && <Progress progress={progress} />}
+
       {error && <Note tone="bad" title="That sweep did not run">{error}</Note>}
 
       {written && (
@@ -166,6 +225,54 @@ export default function Collect({ state, go, onChange }) {
       )}
 
       {(preview || written) && <Results result={preview || written} go={go} written={Boolean(written)} />}
+    </div>
+  )
+}
+
+/**
+ * What the sweep is doing, while it does it.
+ *
+ * Every line here is one fetch against a real business's website, which is
+ * where the minutes go. Showing the name being checked is also the honest
+ * thing: this tool reaches out to other people's servers, and that should be
+ * visible rather than hidden behind a spinner.
+ */
+function Progress({ progress }) {
+  const { checked, total, kept, lines } = progress
+  const percent = total ? Math.round((checked / total) * 100) : 0
+
+  return (
+    <div className="panel space-y-3 p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="eyebrow">Sweeping</h2>
+        <p className="font-mono text-xs text-text-muted">
+          {total ? `${checked} of ${total} checked` : 'searching'}
+          {kept ? ` · ${kept} kept` : ''}
+        </p>
+      </div>
+
+      <div className="h-1 overflow-hidden rounded-full bg-ink-line" aria-hidden="true">
+        <span
+          className="block h-full rounded-full bg-signal transition-[width] duration-200"
+          style={{ width: `${total ? percent : 12}%` }}
+        />
+      </div>
+
+      <ol className="space-y-1">
+        {lines.map((line, index) => (
+          <li
+            key={`${line.message}-${index}`}
+            className={clsx(
+              'truncate font-mono text-xs',
+              // The last line is the one happening now.
+              index === lines.length - 1 ? 'text-text' : 'text-text-faint'
+            )}
+          >
+            {line.keeping === false && <span className="text-text-faint">skip </span>}
+            {line.message}
+          </li>
+        ))}
+      </ol>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
+import { ExternalLink } from 'lucide-react'
 
-import { Empty, Input, Score, Select, Status, Table } from '../components/ui.jsx'
+import { Empty, Hint, Input, Score, Select, Status, Table } from '../components/ui.jsx'
 
 /**
  * The list. Sorted by score, because the score is the whole point of the
@@ -27,7 +28,17 @@ export default function Prospects({ state, go }) {
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight">Prospects</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Businesses with no working website, ranked by how good a prospect they are.
+          Businesses with no working website, ranked by score{' '}
+          <Hint term="the score">
+            How good a prospect a business is, out of 100. It goes up with a missing website, a
+            strong rating, review volume and a phone number to call.
+          </Hint>{' '}
+          and filtered by status{' '}
+          <Hint term="status">
+            How far along a business is. Collected means found. Enriched means it has copy. Built
+            means it has a demo page. Contacted means you have reached out. Rejected means you have
+            ruled it out.
+          </Hint>
         </p>
       </div>
 
@@ -69,7 +80,19 @@ export default function Prospects({ state, go }) {
               </span>
             ),
           },
-          { label: 'Trade', get: (r) => <span className="text-text-muted">{r.industry}</span> },
+          { label: 'Trade', get: (r) => <span className="text-text-muted">{r.industryLabel}</span> },
+          {
+            label: 'Rating',
+            get: (r) =>
+              r.rating == null ? (
+                <span className="font-mono text-xs text-text-faint">none</span>
+              ) : (
+                <span className="font-mono text-xs text-text-muted">
+                  <span className="text-text">{r.rating.toFixed(1)}</span> from {r.reviewCount}
+                </span>
+              ),
+            className: 'w-32',
+          },
           { label: 'Status', get: (r) => <Status value={r.status} /> },
           {
             label: 'Phone',
@@ -86,6 +109,25 @@ export default function Prospects({ state, go }) {
                 {r.services} services &middot; {r.quotes} quotes
               </span>
             ),
+          },
+          {
+            label: 'Demo',
+            className: 'w-20',
+            get: (r) =>
+              r.demo?.built ? (
+                // Stops here rather than opening the prospect underneath it.
+                <a
+                  href={r.demo.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-xs text-signal hover:underline"
+                >
+                  open <ExternalLink size={12} />
+                </a>
+              ) : (
+                <span className="text-xs text-text-faint">not built</span>
+              ),
           },
         ]}
         empty={

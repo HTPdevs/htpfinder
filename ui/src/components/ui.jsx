@@ -6,9 +6,60 @@
  */
 
 import clsx from 'clsx'
-import { AlertTriangle, Check, Loader2, X } from 'lucide-react'
+import { AlertTriangle, Check, HelpCircle, Loader2, X } from 'lucide-react'
 
-export function Button({ variant = 'default', className, loading, children, ...props }) {
+/**
+ * A plain language explanation of a term, on hover or on focus.
+ *
+ * This tool has a vocabulary: prospect, slug, provenance, palette, sweep. Some
+ * of it is worth keeping, because it is what the CLI and the docs call these
+ * things, and a UI that renames everything teaches a vocabulary that then
+ * matches nothing. So the words stay and the explanation comes to you.
+ *
+ * A button rather than a span, so it reaches keyboard and touch users: focus
+ * opens it, and on a phone a tap is a focus.
+ */
+export function Hint({ term, children, align = 'center' }) {
+  return (
+    // Inline, so a hint can sit inside a sentence without breaking the line
+    // before the word it explains.
+    <span className="group relative inline-flex translate-y-px align-middle">
+      <button
+        type="button"
+        aria-label={`What ${term} means`}
+        className="text-text-faint transition-colors hover:text-signal focus-visible:text-signal"
+      >
+        <HelpCircle size={13} />
+      </button>
+
+      <span
+        role="tooltip"
+        className={clsx(
+          'pointer-events-none invisible absolute top-full z-20 mt-1.5 w-64 rounded-panel border',
+          // Always body type at a readable size, whatever it is sitting inside:
+          // these appear next to monospace slugs and uppercase eyebrows, and an
+          // explanation set in either is harder to read than the term it explains.
+          'border-ink-line bg-ink-panel p-2.5 text-left font-body text-xs font-normal normal-case',
+          'leading-relaxed tracking-normal text-text-muted opacity-0 shadow-lg transition-opacity',
+          'group-hover:visible group-hover:opacity-100',
+          'group-focus-within:visible group-focus-within:opacity-100',
+          // Right aligned near the edge of a panel, where a centred tooltip
+          // would run off the screen on a phone.
+          align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'
+        )}
+      >
+        {children}
+      </span>
+    </span>
+  )
+}
+
+/**
+ * `as` exists for one case: a link that has to read as an action, like opening
+ * a built demo. An anchor styled as a button keeps middle click and copy link
+ * working, which a button with an onClick would quietly take away.
+ */
+export function Button({ as: Tag = 'button', variant = 'default', className, loading, children, ...props }) {
   const variants = {
     primary: 'bg-signal text-ink hover:bg-signal-light',
     default: 'border border-ink-line bg-ink-panel text-text hover:border-text-faint',
@@ -17,26 +68,27 @@ export function Button({ variant = 'default', className, loading, children, ...p
   }
 
   return (
-    <button
+    <Tag
       className={clsx(
         'inline-flex items-center justify-center gap-2 rounded-panel px-3 py-2 text-sm font-medium',
         'transition-colors disabled:cursor-not-allowed disabled:opacity-40',
         variants[variant],
         className
       )}
-      disabled={loading || props.disabled}
+      {...(Tag === 'button' ? { disabled: loading || props.disabled } : {})}
       {...props}
     >
       {loading && <Loader2 size={14} className="animate-spin" />}
       {children}
-    </button>
+    </Tag>
   )
 }
 
 export function Field({ label, hint, children }) {
   return (
     <label className="block">
-      <span className="eyebrow mb-1.5 block">{label}</span>
+      {/* Flex rather than block, so a label can carry a Hint beside it. */}
+      <span className="eyebrow mb-1.5 flex items-center gap-1.5">{label}</span>
       {children}
       {hint && <span className="mt-1.5 block text-xs text-text-faint">{hint}</span>}
     </label>
@@ -88,6 +140,10 @@ export function Command({ children, className }) {
   return (
     <div className={clsx('command-line', className)}>
       <code className="command flex-1 break-all text-text">{children}</code>
+      <Hint term="this line" align="right">
+        The command the button below runs. You never have to type it: it is here so the tool is
+        honest about what it is about to do, and so the same work can be repeated in a terminal.
+      </Hint>
     </div>
   )
 }

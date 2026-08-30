@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 
 import { api } from '../api.js'
-import { Button, Command, Empty, Note, Score, Spinner, Status, Table } from '../components/ui.jsx'
+import { Button, Command, Empty, Hint, Note, Score, Spinner, Status, Table } from '../components/ui.jsx'
 
 /**
  * No hint on `in sync`. Repeating "the copies match" down a column of matching
@@ -193,7 +193,14 @@ export default function Sync({ state }) {
 function Header() {
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold tracking-tight">Store</h1>
+      <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight">
+        Store
+        <Hint term="the store">
+          A database in the cloud holding your research, so it survives this machine and can be
+          reached from another one. Nothing goes up on its own: sending and bringing down are
+          both buttons you press.
+        </Hint>
+      </h1>
       <p className="mt-1 text-sm text-text-muted">
         Files on this machine are what you edit. The store is where the research lives, scoped to
         your account and able to forget a business when asked.

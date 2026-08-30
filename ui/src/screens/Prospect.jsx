@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, Check, Copy, ExternalLink } from 'lucide-react'
 
 import { api } from '../api.js'
-import { Button, Command, Note, Score, Select, Spinner, Status } from '../components/ui.jsx'
+import { Button, Command, Hint, Note, Score, Select, Spinner, Status } from '../components/ui.jsx'
 
 /**
  * One prospect: what is known, where it came from, and what it still needs.
@@ -12,16 +12,22 @@ import { Button, Command, Note, Score, Select, Spinner, Status } from '../compon
  */
 export default function Prospect({ slug, go, onChange }) {
   const [data, setData] = useState(null)
+  // Two kinds of failure, kept apart. Not reading the prospect means there is
+  // no screen to show. A build that failed is one panel reporting a problem on
+  // a screen that is otherwise fine, and swapping the whole page for the error
+  // takes away everything the person needs in order to understand it.
+  const [loadError, setLoadError] = useState(null)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(null)
   const [saved, setSaved] = useState(null)
+  const [lastBuild, setLastBuild] = useState(null)
 
   const load = useCallback(async () => {
     try {
       setData(await api.prospect(slug))
-      setError(null)
+      setLoadError(null)
     } catch (err) {
-      setError(err.message)
+      setLoadError(err.message)
     }
   }, [slug])
 
@@ -29,7 +35,7 @@ export default function Prospect({ slug, go, onChange }) {
     load()
   }, [load])
 
-  if (error) return <Note tone="bad" title="Cannot open that prospect">{error}</Note>
+  if (loadError) return <Note tone="bad" title="Cannot open that prospect">{loadError}</Note>
   if (!data) return <Spinner label="Reading the prospect" />
 
   const { prospect, validation } = data
@@ -67,13 +73,33 @@ export default function Prospect({ slug, go, onChange }) {
               {facts.name?.value || prospect.slug}
             </h1>
             <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs text-text-faint">
-              <span>{prospect.slug}</span>
-              <span>{prospect.industry}</span>
-              <span>{prospect.provenance}</span>
+              <span className="flex items-center gap-1">
+                {prospect.slug}
+                <Hint term="this short name">
+                  The short name this business is filed under, in folders, in the store and in the
+                  address of its demo page. It is made from the business name and never changes.
+                </Hint>
+              </span>
+              <span>{data.profile.label}</span>
+              <span className="flex items-center gap-1">
+                {prospect.provenance}
+                <Hint term="where the facts came from">
+                  Where these facts came from. Google Places means a real search. A recorded sweep
+                  means saved test data, which can never be built into a page carrying a real
+                  business name.
+                </Hint>
+              </span>
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Score value={prospect.score?.total} />
+            <span className="flex items-center gap-1.5">
+              <Score value={prospect.score?.total} />
+              <Hint term="the score" align="right">
+                How good a prospect this is, out of 100. It goes up with a missing website, a
+                strong rating, review volume and a phone number to call. It says nothing about
+                the quality of the business.
+              </Hint>
+            </span>
             <Select
               value={prospect.status}
               aria-label="Status"
@@ -130,7 +156,14 @@ export default function Prospect({ slug, go, onChange }) {
         {/* min-w-0: a grid child defaults to min-width auto, so one wide
             descendant would stretch the column past the viewport. */}
         <section className="min-w-0 space-y-4">
-          <h2 className="eyebrow">What we know, and where from</h2>
+          <h2 className="eyebrow flex items-center gap-1.5">
+            What we know, and where from
+            <Hint term="these facts">
+              Everything here was found on a public listing, and the arrow beside a row opens the
+              listing it came from. Anything nobody could find reads as not found, rather than
+              being guessed at.
+            </Hint>
+          </h2>
           <div className="panel divide-y divide-ink-line">
             <FactRow label="Phone" fact={facts.phone} />
             <FactRow label="Address" fact={facts.address} />
@@ -155,11 +188,32 @@ export default function Prospect({ slug, go, onChange }) {
         {/* Sticky, because the left column runs long on a well researched
             prospect and the actions should not scroll away from it. */}
         <section className="min-w-0 space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <Actions
+          {error && (
+            <Note tone="bad" title="That did not run">
+              {/* Whitespace preserved, because a failed page build reports the
+                  last few lines of the renderer's own output. */}
+              <p className="whitespace-pre-wrap">{error}</p>
+            </Note>
+          )}
+
+          <Copywriting
             slug={slug}
             prospect={prospect}
             busy={busy}
-            onBuild={(options) => act('build', () => api.build(slug, options))}
+            onEnrich={(options) => act('enrich', () => api.enrich(slug, options))}
+          />
+          <Actions
+            slug={slug}
+            prospect={prospect}
+            demo={data.demo}
+            busy={busy}
+            result={lastBuild}
+            onBuild={(options) =>
+              act('build', async () => {
+                setLastBuild(null)
+                setLastBuild(await api.build(slug, options))
+              })
+            }
           />
           <Packet slug={slug} hasCopy={Boolean(prospect.copy)} />
         </section>
@@ -201,7 +255,7 @@ function Readiness({ stage, hasCopy }) {
     <Note tone="good" title={hasCopy ? 'Ready to build' : 'Collected cleanly'}>
       {hasCopy
         ? 'Every claim carries a source and the copy follows the rules.'
-        : 'Nothing is wrong with it. It still needs the research step before it can become a demo.'}
+        : 'Nothing is wrong with it. Write the copy to make it buildable, or hand the research brief to an agent first for a better page.'}
     </Note>
   )
 }
@@ -363,44 +417,152 @@ function Quotes({ quotes }) {
   )
 }
 
-function Actions({ slug, prospect, busy, onBuild }) {
-  const [vite, setVite] = useState(false)
+/**
+ * Copy written from the facts, with no research step.
+ *
+ * The honest framing matters here. This is the floor: it turns a collected
+ * prospect into a buildable one without inventing anything, and a researched
+ * prospect will always make a better page. So the panel says what it is, and
+ * replacing existing copy takes a second, deliberate click.
+ */
+function Copywriting({ slug, prospect, busy, onEnrich }) {
+  const [confirming, setConfirming] = useState(false)
+  const hasCopy = Boolean(prospect.copy)
   const blocked = prospect.provenance === 'fixture'
 
   return (
     <div className="panel space-y-3 p-4">
-      <h2 className="eyebrow">Build the demo site</h2>
+      <h2 className="eyebrow flex items-center gap-1.5">
+        Write the copy
+        <Hint term="copy">
+          Copy is the words on the page: headlines, the about section, the closing pitch. Facts
+          are found, copy is written. This writes it from the facts on the left without inventing
+          anything, which is enough to build a page.
+        </Hint>
+      </h2>
       <p className="text-sm text-text-muted">
-        Writes the renderer files for this business. A palette is picked for you if it does not
-        have one.
+        {hasCopy
+          ? 'This prospect already has copy. Writing it again replaces every section with copy generated from the facts.'
+          : 'Turns the facts above into every section of the page. Nothing is invented: a fact that is missing is a sentence that does not get written.'}
+      </p>
+
+      <Command>{`htpfinder enrich ${slug}${hasCopy ? ' --force' : ''}`}</Command>
+
+      {hasCopy && !confirming ? (
+        <Button variant="default" disabled={blocked} onClick={() => setConfirming(true)}>
+          Replace the copy
+        </Button>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="primary"
+            loading={busy === 'enrich'}
+            disabled={blocked}
+            onClick={() => {
+              setConfirming(false)
+              onEnrich({ force: hasCopy })
+            }}
+          >
+            {hasCopy ? 'Yes, replace it' : 'Write copy from the facts'}
+          </Button>
+          {confirming && (
+            <Button variant="quiet" onClick={() => setConfirming(false)}>
+              Keep what is there
+            </Button>
+          )}
+        </div>
+      )}
+
+      {blocked && (
+        <p className="text-xs text-text-faint">
+          Recorded sweeps are skipped, since they can never be built.
+        </p>
+      )}
+
+      {prospect.enrichedAt && (
+        <p className="font-mono text-xs text-text-faint">
+          last written {new Date(prospect.enrichedAt).toLocaleString()}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Building the page.
+ *
+ * The button produces a page you can open, every time. It used to write two
+ * source files and stop unless a checkbox was ticked, which from the outside
+ * looked like a button that changed a status and did nothing else. The files
+ * on their own are only useful to somebody about to run a dev server, so that
+ * is now the option rather than the default.
+ */
+function Actions({ slug, prospect, demo, busy, result, onBuild }) {
+  const [vite, setVite] = useState(true)
+  const blocked = prospect.provenance === 'fixture'
+  const building = busy === 'build'
+
+  return (
+    <div className="panel space-y-3 p-4">
+      <h2 className="eyebrow flex items-center gap-1.5">
+        Build the demo site
+        <Hint term="the demo site">
+          The page this business would get. It is built from the facts and copy on the left, and
+          nothing else. Building it again after an edit replaces the old one.
+        </Hint>
+      </h2>
+      <p className="text-sm text-text-muted">
+        Turns this prospect into a page you can open and send. A colour scheme is picked for you
+        if it does not have one.
       </p>
 
       <Command>{`htpfinder build ${slug}${vite ? ' --run' : ''}`}</Command>
 
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-text-muted">
-        <input
-          type="checkbox"
-          checked={vite}
-          onChange={(event) => setVite(event.target.checked)}
-          className="size-4 rounded border-ink-line bg-ink accent-signal"
-        />
-        Also run the production build
-      </label>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="primary" loading={building} disabled={blocked} onClick={() => onBuild({ vite })}>
+          {demo?.built ? 'Build it again' : 'Build the demo site'}
+        </Button>
 
-      <Button
-        variant="primary"
-        loading={busy === 'build'}
-        disabled={blocked}
-        onClick={() => onBuild({ vite })}
-      >
-        Build demo site
-      </Button>
+        {demo?.built && !building && (
+          // Served by this same server, so the page opens without a second
+          // dev server and without knowing what Vite is.
+          <Button as="a" variant="default" href={demo.url} target="_blank" rel="noreferrer">
+            <ExternalLink size={14} />
+            Open the demo
+          </Button>
+        )}
+      </div>
+
+      {building && vite && (
+        <p className="text-xs text-text-faint">
+          Rendering the page. This takes a few seconds the first time.
+        </p>
+      )}
+
+      {result && !building && <BuildReport result={result} />}
+
+      {!demo?.built && !result && !blocked && (
+        <p className="text-xs text-text-faint">No page has been built for this business yet.</p>
+      )}
 
       {blocked && (
         <p className="text-xs text-text-faint">
           Recorded sweeps cannot be built. Collect this business against the live API first.
         </p>
       )}
+
+      <label className="flex cursor-pointer items-start gap-2 border-t border-ink-line pt-3 text-xs text-text-faint">
+        <input
+          type="checkbox"
+          checked={!vite}
+          onChange={(event) => setVite(!event.target.checked)}
+          className="mt-0.5 size-3.5 rounded border-ink-line bg-ink accent-signal"
+        />
+        <span>
+          Write the source files only, without rendering a page. For working on the renderer with
+          a dev server running.
+        </span>
+      </label>
 
       {prospect.design?.paletteId && (
         <p className="font-mono text-xs text-text-faint">
@@ -409,6 +571,41 @@ function Actions({ slug, prospect, busy, onBuild }) {
         </p>
       )}
     </div>
+  )
+}
+
+/** What the last build actually did, in the panel that started it. */
+function BuildReport({ result }) {
+  return (
+    <Note
+      tone={result.forced ? 'warn' : 'good'}
+      title={result.viteBuilt ? 'The page is ready' : 'Source files written'}
+    >
+      <ul className="space-y-1">
+        {result.assignedPalette && (
+          <li>
+            Colour scheme: {result.assignedPalette.label}, picked because no other prospect is
+            using it.
+          </li>
+        )}
+        {result.viteBuilt ? (
+          <li>
+            Open it with the button above, or at{' '}
+            <code className="command text-text">{result.demo?.url}</code>
+          </li>
+        ) : (
+          <li>
+            No page was rendered, because the source files only option is ticked below.
+          </li>
+        )}
+        {result.forced && <li>Built with {result.errors.length} unresolved problem(s).</li>}
+        {result.warnings.map((problem) => (
+          <li key={problem.path + problem.message} className="text-text-muted">
+            {problem.path}: {problem.message}
+          </li>
+        ))}
+      </ul>
+    </Note>
   )
 }
 
@@ -441,7 +638,14 @@ function Packet({ slug, hasCopy }) {
 
   return (
     <div className="panel space-y-3 p-4">
-      <h2 className="eyebrow">Research brief</h2>
+      <h2 className="eyebrow flex items-center gap-1.5">
+        Research brief
+        <Hint term="the research brief">
+          A list of what is still missing about this business and which directories tend to carry
+          it. Copy it and hand it to an AI assistant, or work through it yourself. It is what
+          turns a page that is true into a page that is persuasive.
+        </Hint>
+      </h2>
       <p className="text-sm text-text-muted">
         {hasCopy
           ? 'The brief that shaped this page. Open it again to redo the research.'
