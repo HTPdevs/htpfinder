@@ -3,6 +3,7 @@ import * as log from './lib/log.js'
 import * as build from './commands/build.js'
 import * as collect from './commands/collect.js'
 import * as enrich from './commands/enrich.js'
+import * as inbox from './commands/inbox.js'
 import * as industries from './commands/industries.js'
 import * as list from './commands/list.js'
 import * as packet from './commands/packet.js'
@@ -17,6 +18,7 @@ const COMMANDS = {
   industries,
   profile,
   collect,
+  inbox,
   list,
   show,
   packet,
@@ -37,6 +39,7 @@ Commands
   industries              List the industry profiles available
   profile <industry>      Print the research brief for a trade we do not cover
   collect <industry>      Sweep Places for prospects without a website
+  inbox <vertical>        Rank businesses whose messages are spread across channels
   list                    Show collected prospects
   show <slug>             Show one prospect and its sources
   packet <slug>           Print the enrichment brief for the research step

@@ -46,4 +46,5 @@ Prospect pipeline (collect → enrich → render) documented in `docs/`. Read th
 - **`docs/ADDING-AN-INDUSTRY.md`** adding a new trade: `cli/industries/<id>.js` is the single file that drives collector, enrichment brief, validator, and renderer.
 - **`docs/ENRICHMENT.md`** turning a collected prospect into `prospect.json`; hand this file to an agent doing prospect research.
 - **`docs/PROSPECT-SCHEMA.md`** the `prospect.json` contract: facts are sourced, copy is written, missing data is `null` never guessed.
+- **`docs/INBOX-PIPELINE.md`** the second pipeline, `htpfinder inbox`: ranks businesses that already have a website and too many channels for the hosted Chatwoot offer. Read it before touching `src/lib/{inbox,widgets,verticals,treg}.js`. Costs money per run.
 - **`docs/TROUBLESHOOTING.md`** known failure modes for collect/enrich/render stages, check before debugging from scratch.

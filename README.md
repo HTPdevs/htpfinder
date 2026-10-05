@@ -3,7 +3,7 @@
 Finds local businesses that have no website, researches them from public
 sources, and builds each one a demo site to open a sales conversation with.
 
-A sub brand tool of `> HTPdevs`.
+A sub brand tool of `HTPdevs`.
 
 ---
 
